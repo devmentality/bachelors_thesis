@@ -1,0 +1,1 @@
+/usr/bin/c++   -fPIC -fno-exceptions -g   CMakeFiles/test01-uuid.dir/test/uuid.cpp.o  -o test01-uuid  /usr/lib/x86_64-linux-gnu/libgtest.a /usr/lib/x86_64-linux-gnu/libgtest_main.a libron_static.a /usr/lib/x86_64-linux-gnu/libgtest.a -lpthread -lz -lrt 

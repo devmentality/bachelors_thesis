@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/main.dir/main.cpp.o  -o main  ron/libron_static.a -lz -lrt 

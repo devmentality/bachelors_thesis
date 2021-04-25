@@ -1,0 +1,13 @@
+#!/usr/local/bin/drone
+## this script generates status.hpp from status.ron
+
+print '#ifndef STATUS_HPP',
+print '#define STATUS_HPP';
+
+for id status string comment in '../ron/status.ron',
+    set int_value to pick 1 of ints of status,
+    print 'constexpr Status ' status '{' int_value 'UL};  // ' comment;
+
+print 'using ErrorList = std::vector<std::pair<Status, const Codepoint*>>;',
+print 'extern ErrorList ERRORS;',
+print '#endif';
