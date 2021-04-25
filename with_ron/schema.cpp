@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "sqlite/sqlite3.h"
+#include "sqlite3.h"
 using namespace std;
 
 struct column_description
@@ -16,11 +16,6 @@ struct table_description
     vector<column_description> pkey_columns;
 };
 
-void create_operations_table(sqlite3* db, const table_description& table_description)
-{
-    auto sql = make_create_operations_table_sql(table_description);
-    run(db, sql);
-}
 
 string make_create_operations_table_sql(const table_description& table_description)
 {
@@ -44,35 +39,6 @@ string make_create_operations_table_sql(const table_description& table_descripti
     return sql;
 }
 
-
-void create_triggers(sqlite3* db, const table_description& table_description)
-{
-    pair<string, string> op_tbl[3]{ {"insert", "new"}, {"delete", "old"} };
-
-    for (auto [op_name, trig_tbl_name] : op_tbl)
-    {
-        auto sql = make_trigger_sql(table_description, op_name, trig_tbl_name);
-        run(db, sql);
-    }
-}
-
-string make_trigger_sql(const table_description& table_description, string op_name, string trig_tbl_name)
-{
-
-    auto sql = "create trigger __" + table_description.name + "_" + op_name + "\n";
-    sql += "after " + op_name + " on " + table_description.name + " for each row\n";
-    sql += "begin\n";
-
-    sql += "update curr_ondx set value = value + 1;\n";
-
-    sql += make_delete_from_ops_sql(table_description, trig_tbl_name) + ";\n";
-    sql += make_insert_to_ops_sql(table_description, op_name, trig_tbl_name) + ";\n";
-
-    sql += "end;";
-
-    return sql;
-}
-
 string make_delete_from_ops_sql(const table_description& table_description, string trig_tbl_name)
 {
     auto ops_table_name = "__" + table_description.name + "_ops";
@@ -85,7 +51,9 @@ string make_delete_from_ops_sql(const table_description& table_description, stri
         sql += " and ";
         sql += col_name + " = " + trig_tbl_name + "." + col_name;
     }
+    return sql;
 }
+
 
 string make_insert_to_ops_sql(const table_description& table_description, string op_name, string trig_tbl_name)
 {
@@ -105,6 +73,26 @@ string make_insert_to_ops_sql(const table_description& table_description, string
     return sql;
 }
 
+string make_trigger_sql(const table_description& table_description, string op_name, string trig_tbl_name)
+{
+
+    auto sql = "create trigger __" + table_description.name + "_" + op_name + "\n";
+    sql += "after " + op_name + " on " + table_description.name + " for each row\n";
+    sql += "begin\n";
+
+    sql += "update curr_ondx set value = value + 1;\n";
+
+    sql += make_delete_from_ops_sql(table_description, trig_tbl_name) + ";\n";
+    sql += make_insert_to_ops_sql(table_description, op_name, trig_tbl_name) + ";\n";
+
+    sql += "end;";
+
+    return sql;
+}
+
+
+
+
 
 void run(sqlite3* db, string sql)
 {
@@ -118,3 +106,26 @@ void run(sqlite3* db, string sql)
         sqlite3_free(zErrMsg);
     }
 }
+
+
+void create_operations_table(sqlite3* db, const table_description& table_description)
+{
+    auto sql = make_create_operations_table_sql(table_description);
+    run(db, sql);
+}
+
+
+void create_triggers(sqlite3* db, const table_description& table_description)
+{
+    pair<string, string> op_tbl[3]{ {"insert", "new"}, {"delete", "old"} };
+
+    for (auto entry : op_tbl)
+    {
+        auto op_name = entry.first, trig_tbl_name = entry.second;
+        auto sql = make_trigger_sql(table_description, op_name, trig_tbl_name);
+        run(db, sql);
+    }
+}
+
+
+

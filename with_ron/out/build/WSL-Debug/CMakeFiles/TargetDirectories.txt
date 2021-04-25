@@ -11,3 +11,6 @@
 /mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/out/build/WSL-Debug/ron/CMakeFiles/test04-ronv.dir
 /mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/out/build/WSL-Debug/ron/CMakeFiles/test01-uuid.dir
 /mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/out/build/WSL-Debug/ron/CMakeFiles/ron_static.dir
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/out/build/WSL-Debug/sqlite/CMakeFiles/rebuild_cache.dir
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/out/build/WSL-Debug/sqlite/CMakeFiles/edit_cache.dir
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/out/build/WSL-Debug/sqlite/CMakeFiles/sqlite.dir

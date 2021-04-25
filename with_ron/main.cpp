@@ -1,26 +1,30 @@
-#include "ron/ron.hpp"
+#include <iostream>
+#include <string>
+#include "schema.h"
+#include "sqlite3.h"
 
-using namespace ron;
+using namespace std;
 
-PROC StreamAPIExamples() {
-    ron::Op op{Uuid{"0-0-B"}, Uuid{"yarn"}};
-    op.Values().PushUtf8String("hello from my proj!");
-    RONtStream std{};
-    CALL(std.Open("-", Stream::WRITE));  // open stdout
-    CALL(std.FeedOp(op));                // serialize an op
-    CALL(std.FeedEOF());                 // terminate the RON frame
-    CALL(std.Drain());                   // send the data to the console
-    
-    DONE;
-}
-
-PROC TestAll() {
-    CALL(StreamAPIExamples());
-    DONE;
-}
 
 int main(int argn, char** args) {
-    auto status = TestAll();
-    if (status != OK) Report(status);
-    return status._s;
+    sqlite3* db;
+    char* zErrMsg = 0;
+    int rc = sqlite3_open("data/sample.db", &db);
+
+    if (rc)
+    {
+        cerr << "Can't open database: " << sqlite3_errmsg(db) << endl;
+        return 0;
+    }
+    cout << "Opened database successfully" << endl;
+    
+    string create_table_sql = 
+        "create table records("  \
+        "id int primary key not null, " \
+        "data text not null);";
+
+    run(db, create_table_sql);
+   
+    sqlite3_close(db);
+    return 0;
 }

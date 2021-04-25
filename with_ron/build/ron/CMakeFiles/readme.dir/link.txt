@@ -1,0 +1,1 @@
+/usr/bin/c++   -fPIC -fno-exceptions   CMakeFiles/readme.dir/test/readme.cpp.o  -o readme  /usr/lib/x86_64-linux-gnu/libgtest.a /usr/lib/x86_64-linux-gnu/libgtest_main.a libron_static.a /usr/lib/x86_64-linux-gnu/libgtest.a -lpthread -lz -lrt 

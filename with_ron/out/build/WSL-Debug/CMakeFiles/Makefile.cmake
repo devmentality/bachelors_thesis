@@ -12,6 +12,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.16.3/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.16.3/CMakeSystem.cmake"
   "../../../ron/CMakeLists.txt"
+  "../../../sqlite/CMakeLists.txt"
   "/usr/lib/x86_64-linux-gnu/cmake/benchmark/benchmarkConfig.cmake"
   "/usr/lib/x86_64-linux-gnu/cmake/benchmark/benchmarkConfigVersion.cmake"
   "/usr/lib/x86_64-linux-gnu/cmake/benchmark/benchmarkTargets-release.cmake"
@@ -57,6 +58,7 @@ set(CMAKE_MAKEFILE_OUTPUTS
 set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/CMakeDirectoryInformation.cmake"
   "ron/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "sqlite/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
@@ -70,4 +72,5 @@ set(CMAKE_DEPEND_INFO_FILES
   "ron/CMakeFiles/test04-ronv.dir/DependInfo.cmake"
   "ron/CMakeFiles/test01-uuid.dir/DependInfo.cmake"
   "ron/CMakeFiles/ron_static.dir/DependInfo.cmake"
+  "sqlite/CMakeFiles/sqlite.dir/DependInfo.cmake"
   )

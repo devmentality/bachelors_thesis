@@ -184,8 +184,8 @@ CMAKE_STATIC_LINKER_FLAGS_RELEASE:STRING=
 // during RELWITHDEBINFO builds.
 CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO:STRING=
 
-//The CMake toolchain file
-CMAKE_TOOLCHAIN_FILE:FILEPATH=C:/Users/devmentality/vcpkg/scripts/buildsystems/vcpkg.cmake
+//No help, variable specified on the command line.
+CMAKE_TOOLCHAIN_FILE:UNINITIALIZED=C:/Users/devmentality/vcpkg/scripts/buildsystems/vcpkg.cmake
 
 //If this value is on, makefiles will be generated without the
 // .SILENT directive, and all commands will be echoed to the console
@@ -213,6 +213,9 @@ MainProj_BINARY_DIR:STATIC=C:/Users/devmentality/Desktop/diploma/bachelors_thesi
 
 //Value Computed by CMake
 MainProj_SOURCE_DIR:STATIC=C:/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron
+
+//The directory containing a CMake configuration file for SQLite3.
+SQLite3_DIR:PATH=SQLite3_DIR-NOTFOUND
 
 //Automatically copy dependencies into the output directory for
 // executables.
@@ -363,7 +366,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_MT
 CMAKE_MT-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=2
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=1
 //Platform information initialized
 CMAKE_PLATFORM_INFO_INITIALIZED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_RC_COMPILER

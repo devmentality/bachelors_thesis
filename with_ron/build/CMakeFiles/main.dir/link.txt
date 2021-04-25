@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/main.dir/main.cpp.o CMakeFiles/main.dir/schema.cpp.o  -o main  ron/libron_static.a /usr/local/lib/libsqlite3.a -lz -lrt 

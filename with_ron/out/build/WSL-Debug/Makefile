@@ -69,8 +69,8 @@ rebuild_cache/fast: rebuild_cache
 
 # Special rule for the target edit_cache
 edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
-	/usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
+	/usr/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -227,6 +227,19 @@ ron_static/fast:
 	$(MAKE) -f ron/CMakeFiles/ron_static.dir/build.make ron/CMakeFiles/ron_static.dir/build
 .PHONY : ron_static/fast
 
+#=============================================================================
+# Target rules for targets named sqlite
+
+# Build rule for target.
+sqlite: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 sqlite
+.PHONY : sqlite
+
+# fast build rule for target.
+sqlite/fast:
+	$(MAKE) -f sqlite/CMakeFiles/sqlite.dir/build.make sqlite/CMakeFiles/sqlite.dir/build
+.PHONY : sqlite/fast
+
 main.o: main.cpp.o
 
 .PHONY : main.o
@@ -254,6 +267,33 @@ main.cpp.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+schema.o: schema.cpp.o
+
+.PHONY : schema.o
+
+# target to build an object file
+schema.cpp.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/schema.cpp.o
+.PHONY : schema.cpp.o
+
+schema.i: schema.cpp.i
+
+.PHONY : schema.i
+
+# target to preprocess a source file
+schema.cpp.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/schema.cpp.i
+.PHONY : schema.cpp.i
+
+schema.s: schema.cpp.s
+
+.PHONY : schema.s
+
+# target to generate assembly for a file
+schema.cpp.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/schema.cpp.s
+.PHONY : schema.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -271,9 +311,13 @@ help:
 	@echo "... test04-ronv"
 	@echo "... test01-uuid"
 	@echo "... ron_static"
+	@echo "... sqlite"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... schema.o"
+	@echo "... schema.i"
+	@echo "... schema.s"
 .PHONY : help
 
 

@@ -40,6 +40,7 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/out/build/WSL-Debug/ron/cmake_install.cmake")
+  include("/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/out/build/WSL-Debug/sqlite/cmake_install.cmake")
 
 endif()
 

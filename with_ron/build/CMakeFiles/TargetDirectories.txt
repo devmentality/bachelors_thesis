@@ -1,0 +1,13 @@
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/build/CMakeFiles/rebuild_cache.dir
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/build/CMakeFiles/edit_cache.dir
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/build/CMakeFiles/main.dir
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/build/ron/CMakeFiles/rebuild_cache.dir
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/build/ron/CMakeFiles/edit_cache.dir
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/build/ron/CMakeFiles/fuzz04-ronv.dir
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/build/ron/CMakeFiles/fuzz03-ront.dir
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/build/ron/CMakeFiles/readme.dir
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/build/ron/CMakeFiles/test03-ront.dir
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/build/ron/CMakeFiles/test02-utf8.dir
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/build/ron/CMakeFiles/test04-ronv.dir
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/build/ron/CMakeFiles/test01-uuid.dir
+/mnt/c/Users/devmentality/Desktop/diploma/bachelors_thesis/with_ron/build/ron/CMakeFiles/ron_static.dir
