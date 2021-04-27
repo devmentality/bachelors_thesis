@@ -9,7 +9,7 @@ using namespace std;
 int main(int argn, char** args) {
     sqlite3* db;
     char* zErrMsg = 0;
-    int rc = sqlite3_open("data/sample.db", &db);
+    int rc = sqlite3_open("sample.db", &db);
 
     if (rc)
     {
