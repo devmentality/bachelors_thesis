@@ -1,1 +1,0 @@
-/usr/bin/c++   -fPIC -fno-exceptions   CMakeFiles/fuzz04-ronv.dir/fuzz/ronv.cpp.o  -o fuzz04-ronv  libron_static.a -lz -lrt 

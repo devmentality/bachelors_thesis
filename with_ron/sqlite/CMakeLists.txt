@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.9.4)
 project(SqliteLibrary)
 
+set(CMAKE_C_COMPILER "gcc")
 set(SQLITE_SOURCES sqlite3.c)
 set(SQLITE_HEADERS sqlite3.h)
 add_library(sqlite ${SQLITE_SOURCES} ${SQLITE_HEADERS})
