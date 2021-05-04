@@ -2,21 +2,21 @@
 #include <vector>
 #include <string>
 #include "sqlite3.h"
+#include "schema.h"
 using namespace std;
 
-struct column_description
-{
-    string name;
-    string type;
-};
+/*
+    Makes sql of the form:
 
-struct table_description
-{
-    string name;
-    vector<column_description> pkey_columns;
-};
-
-
+    create table __[table_name]_ops (
+        pkey_col1 type1,
+        pkey_col2 type2,
+        ...,
+        ondx int not null,
+        operation text not null,
+        primary key (pkey_col1, pkey_col2, ...)
+    )
+*/
 string make_create_operations_table_sql(const table_description& table_description)
 {
     auto table_name = "__" + table_description.name + "_ops";
@@ -64,7 +64,7 @@ string make_insert_to_ops_sql(const table_description& table_description, string
         sql += ", " + table_description.pkey_columns[i].name;
 
     sql += ", ondx, operation)\n";
-    sql += "values (" + table_description.pkey_columns[0].name;
+    sql += "values (" + trig_tbl_name + "." + table_description.pkey_columns[0].name;
     for (auto i = 1; i < table_description.pkey_columns.size(); i++)
         sql += ", " + trig_tbl_name + "." + table_description.pkey_columns[i].name;
 
@@ -73,9 +73,16 @@ string make_insert_to_ops_sql(const table_description& table_description, string
     return sql;
 }
 
+/*
+    Makes sql for triggers after certain operation.
+    Trigger basic structure:
+
+    1. increment ondx value
+    2. delete data about old operation on the target row
+    3. insert new data about operation on the target row
+*/
 string make_trigger_sql(const table_description& table_description, string op_name, string trig_tbl_name)
 {
-
     auto sql = "create trigger __" + table_description.name + "_" + op_name + "\n";
     sql += "after " + op_name + " on " + table_description.name + " for each row\n";
     sql += "begin\n";
@@ -89,9 +96,6 @@ string make_trigger_sql(const table_description& table_description, string op_na
 
     return sql;
 }
-
-
-
 
 
 void run(sqlite3* db, string sql)
@@ -117,7 +121,7 @@ void create_operations_table(sqlite3* db, const table_description& table_descrip
 
 void create_triggers(sqlite3* db, const table_description& table_description)
 {
-    pair<string, string> op_tbl[3]{ {"insert", "new"}, {"delete", "old"} };
+    pair<string, string> op_tbl[2]{ {"insert", "new"}, {"delete", "old"} };
 
     for (auto entry : op_tbl)
     {
@@ -125,6 +129,22 @@ void create_triggers(sqlite3* db, const table_description& table_description)
         auto sql = make_trigger_sql(table_description, op_name, trig_tbl_name);
         run(db, sql);
     }
+}
+
+
+void setup_current_ondx_table(sqlite3* db)
+{
+    string create_table_sql = 
+        "create table curr_ondx (" \
+            "value int not null default 0" \
+        ")";
+
+    string init_current_ondx =
+        "insert into curr_ondx (value)" \
+        "values (0)";
+
+    run(db, create_table_sql);
+    run(db, init_current_ondx);
 }
 
 
