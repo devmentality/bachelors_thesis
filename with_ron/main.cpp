@@ -1,9 +1,11 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "column_types.h"
 #include "schema.h"
 #include "hooks.h"
 #include "sqlite3.h"
+
 
 using namespace std;
 
@@ -25,7 +27,7 @@ void TestSchemaSetup(sqlite3 *db) {
         "data text not null);";
 
     TableDescription table_description("records",
-        vector<ColumnDescription> {ColumnDescription("id", "int")}
+        vector<ColumnDescription> {ColumnDescription("id", ColumnType::Integer)}
     );
 
     CreateTable(db, create_table_sql, table_description);
@@ -63,7 +65,7 @@ int main(int argn, char** args) {
     auto tracked_tables = new vector<TableDescription> { 
         TableDescription(
             "records",
-            vector<ColumnDescription> {ColumnDescription("id", "int")}) 
+            vector<ColumnDescription> {ColumnDescription("id", ColumnType::Integer)}) 
     };
     
     SetupHooks(db, tracked_tables);

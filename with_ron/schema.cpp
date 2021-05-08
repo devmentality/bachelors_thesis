@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "sqlite3.h"
+#include "column_types.h"
 
 using namespace std;
 
@@ -27,7 +28,7 @@ string MakeCreateOperationsTableSql(const TableDescription& table_description) {
     string column_names = "";
 
     for (auto column : table_description.pkey_columns) {
-        sql += column.name + " " + column.type + ", ";
+        sql += column.name + " " + TYPE_AFFINITIES[column.type] + ", ";
         column_names += column.name + ",";
     }
     column_names.pop_back();
