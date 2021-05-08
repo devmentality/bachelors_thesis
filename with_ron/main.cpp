@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <vector>
 #include "schema.h"
 #include "hooks.h"
 #include "sqlite3.h"
@@ -58,10 +59,17 @@ int main(int argn, char** args) {
         return 0;
     }
     cout << "Opened database successfully" << endl;
+
+    auto tracked_tables = new vector<TableDescription> { 
+        TableDescription(
+            "records",
+            vector<ColumnDescription> {ColumnDescription("id", "int")}) 
+    };
     
-    SetupHooks(db);
+    SetupHooks(db, tracked_tables);
     //TestInsertWithHook(db);
 
     sqlite3_close(db);
+    delete tracked_tables;
     return 0;
 }

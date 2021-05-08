@@ -11,6 +11,8 @@ struct ColumnDescription {
         this->name = name;
         this->type = type;
     }
+
+    ColumnDescription() {}
 };
 
 
@@ -23,6 +25,8 @@ struct TableDescription {
         this->name = name;
         this->pkey_columns = pkey_columns;
     }
+
+    TableDescription() {}
 };
 
 
