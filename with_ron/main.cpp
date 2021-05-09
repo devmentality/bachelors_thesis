@@ -41,9 +41,15 @@ void TestSchemaSetup(sqlite3 *db, const TableDescription& sample_table) {
 void TestInsertWithHook(sqlite3* db) {
     string insert_record_sql =
         "insert into records(data, id) " \
-        "values('Hello!', 15);";
+        "values('Hello!', 18);";
 
     Run(db, insert_record_sql);
+}
+
+void TestDeleteWithHook(sqlite3* db) {
+    string delete_record_sql = "delete from records where id = 17;";
+
+    Run(db, delete_record_sql);
 }
 
 
@@ -67,7 +73,8 @@ int main(int argn, char** args) {
     };
     
     SetupHooks(db, tracked_tables);
-    TestInsertWithHook(db);
+    //TestInsertWithHook(db);
+    TestDeleteWithHook(db);
 
     sqlite3_close(db);
     delete tracked_tables;
