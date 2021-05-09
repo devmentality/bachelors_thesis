@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "sqlite3.h"
 #include "schema.h"
+#include "column_types.h"
 #include "ron/ron.hpp"
 
 using namespace ron;
@@ -23,15 +24,49 @@ bool TryGetTableDescription(
 }
 
 
-void HandleInsert(sqlite3 *db) {
-    int col_count = sqlite3_preupdate_count(db);
-    for (int i = 0; i < col_count; i++) {
-        sqlite3_value* val;
-        sqlite3_preupdate_new(db, i, &val);
+void PrintValues(const vector<sqlite3_value*>& values) {
+    for (auto val : values)
+    {
         cout << sqlite3_value_text(val)
             << " (" << sqlite3_value_type(val) << ") ;";
     }
     cout << endl;
+}
+
+bool AreValidTypes(
+        const TableDescription& table, 
+        const vector<sqlite3_value*>& values
+) {
+    for (auto index = 0; index < values.size(); index++) {
+        auto col = table.column_by_index.at(index);
+        auto expected_type = TO_SQLITE_TYPES[col.type];
+        auto actual_type = sqlite3_value_type(values[index]); //  TODO: what if values is NULL?
+        if (expected_type != actual_type)
+            return false;
+    }
+    return true;
+}
+
+vector<sqlite3_value*> ReadValues(sqlite3* db) {
+    int col_count = sqlite3_preupdate_count(db);
+    vector<sqlite3_value*> values(col_count);
+
+    for (int i = 0; i < col_count; i++) {
+        sqlite3_value* val;
+        sqlite3_preupdate_new(db, i, &val);
+        values[i] = val;
+    }
+
+    return values;
+}
+
+
+void HandleInsert(sqlite3 *db, const TableDescription& table) {
+    auto values = ReadValues(db);
+    PrintValues(values);
+
+    auto areValidTypes = AreValidTypes(table, values);
+    cout << "Types are " << (areValidTypes ? "" : "not") << " valid" << endl;
 }
 
 
@@ -52,9 +87,9 @@ void MyHook(
         return;
 
     if (operation == SQLITE_INSERT) {
-        HandleInsert(db);
+        HandleInsert(db, tbl);
     } else if (operation == SQLITE_DELETE) {
-        
+        ;
     } else {
         throw domain_error("operations other than INSERT & DELETE are prohibited");
     }
@@ -67,7 +102,7 @@ int MyCommitCallback(void* ctx) {
 }
 
 
-void SetupHooks(sqlite3* db, vector<TableDescription> *tracked_table_names) {
-    sqlite3_preupdate_hook(db, MyHook, tracked_table_names);
+void SetupHooks(sqlite3* db, vector<TableDescription> *tracked_tables) {
+    sqlite3_preupdate_hook(db, MyHook, tracked_tables);
     sqlite3_commit_hook(db, MyCommitCallback, NULL);
 }

@@ -18,7 +18,7 @@ void CreateTable(sqlite3 *db, string sql,
 }
 
 
-void TestSchemaSetup(sqlite3 *db) {
+void TestSchemaSetup(sqlite3 *db, const TableDescription& sample_table) {
     SetupCurrentOndxTable(db);
 
     string create_table_sql = 
@@ -26,11 +26,7 @@ void TestSchemaSetup(sqlite3 *db) {
         "id int primary key not null, " \
         "data text not null);";
 
-    TableDescription table_description("records",
-        vector<ColumnDescription> {ColumnDescription("id", ColumnType::Integer)}
-    );
-
-    CreateTable(db, create_table_sql, table_description);
+    CreateTable(db, create_table_sql, sample_table);
 
     string insert_record_sql =
         "insert into records(id, data) " \
@@ -44,8 +40,8 @@ void TestSchemaSetup(sqlite3 *db) {
 
 void TestInsertWithHook(sqlite3* db) {
     string insert_record_sql =
-        "insert into records(id, data) " \
-        "values(2, 'Hello!');";
+        "insert into records(data, id) " \
+        "values('Hello!', 15);";
 
     Run(db, insert_record_sql);
 }
@@ -65,11 +61,13 @@ int main(int argn, char** args) {
     auto tracked_tables = new vector<TableDescription> { 
         TableDescription(
             "records",
-            vector<ColumnDescription> {ColumnDescription("id", ColumnType::Integer)}) 
+            vector<ColumnDescription> {ColumnDescription(0, "id", ColumnType::Integer)},
+            vector<ColumnDescription> {ColumnDescription(1, "data", ColumnType::Text)}
+        ) 
     };
     
     SetupHooks(db, tracked_tables);
-    //TestInsertWithHook(db);
+    TestInsertWithHook(db);
 
     sqlite3_close(db);
     delete tracked_tables;

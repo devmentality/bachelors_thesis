@@ -9,6 +9,16 @@
 using namespace std;
 
 
+void TableDescription::BuildColumnsMapping() {
+    for (auto col : pkey_columns) column_by_index[col.index] = col;
+    for (auto col : other_columns) column_by_index[col.index] = col;
+}
+
+int TableDescription::ColumnsAmount() {
+    return pkey_columns.size() + other_columns.size();
+}
+
+
 /*
     Makes sql of the form:
 
