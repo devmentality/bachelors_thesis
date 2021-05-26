@@ -51,9 +51,8 @@ private:
 };
 
 
-void Run(sqlite3* db, std::string sql);
+void Run(sqlite3* db, const std::string& sql);
 void SetupCurrentOndxTable(sqlite3* db);
-void CreateOperationsTable(sqlite3* db, const TableDescription& table_description);
 void CreateTriggers(sqlite3* db, const TableDescription& table_description);
 
 #endif // !SCHEMA_H

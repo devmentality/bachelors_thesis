@@ -10,10 +10,9 @@
 using namespace std;
 
 
-void CreateTable(sqlite3 *db, string sql, 
+void CreateTable(sqlite3 *db, const string& sql,
                  const TableDescription& table_description) {
     Run(db, sql);
-    CreateOperationsTable(db, table_description);
     CreateTriggers(db, table_description);
 }
 
