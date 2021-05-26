@@ -1,2 +1,0 @@
-/usr/bin/ar qc libron_static.a CMakeFiles/ron_static.dir/utf8.cpp.o CMakeFiles/ron_static.dir/uuid.cpp.o CMakeFiles/ron_static.dir/op.cpp.o CMakeFiles/ron_static.dir/basic-streams.cpp.o CMakeFiles/ron_static.dir/status.cpp.o CMakeFiles/ron_static.dir/ron-streams.cpp.o CMakeFiles/ron_static.dir/stream.cpp.o CMakeFiles/ron_static.dir/poll.cpp.o CMakeFiles/ron_static.dir/deps/ryu/ryu/d2s.c.o CMakeFiles/ron_static.dir/ront-parser.cxx.o CMakeFiles/ron_static.dir/utf8-parser.cxx.o CMakeFiles/ron_static.dir/uuid-parser.cxx.o
-/usr/bin/ranlib libron_static.a

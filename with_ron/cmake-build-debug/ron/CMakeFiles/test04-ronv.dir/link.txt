@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC -fno-exceptions -g CMakeFiles/test04-ronv.dir/test/ronv.cpp.o -o test04-ronv  /usr/lib/x86_64-linux-gnu/libgtest.a /usr/lib/x86_64-linux-gnu/libgtest_main.a libron_static.a /usr/lib/x86_64-linux-gnu/libgtest.a -lpthread -lz -lrt 
