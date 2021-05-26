@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC -fno-exceptions -g CMakeFiles/test02-utf8.dir/test/utf8.cpp.o -o test02-utf8  /usr/lib/x86_64-linux-gnu/libgtest.a /usr/lib/x86_64-linux-gnu/libgtest_main.a libron_static.a /usr/lib/x86_64-linux-gnu/libgtest.a -lpthread -lz -lrt 

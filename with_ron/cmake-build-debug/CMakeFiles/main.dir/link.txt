@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/main.dir/main.cpp.o CMakeFiles/main.dir/schema.cpp.o CMakeFiles/main.dir/hooks.cpp.o CMakeFiles/main.dir/column_types.cpp.o -o main  ron/libron_static.a sqlite/libsqlite.a -lz -lrt -ldl -lpthread 

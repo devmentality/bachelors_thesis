@@ -47,9 +47,15 @@ void TestInsertWithHook(sqlite3* db) {
 }
 
 void TestDeleteWithHook(sqlite3* db) {
-    string delete_record_sql = "delete from records where id = 17;";
+    string delete_record_sql = "delete from records where id = 1;";
 
     Run(db, delete_record_sql);
+}
+
+void TurnForeignKetSupportOn(sqlite3* db) {
+    string sql = "PRAGMA foreign_keys = ON";
+
+    Run(db, sql);
 }
 
 
@@ -63,18 +69,34 @@ int main(int argn, char** args) {
         return 0;
     }
     cout << "Opened database successfully" << endl;
+    TurnForeignKetSupportOn(db);
 
     auto tracked_tables = new vector<TableDescription> { 
         TableDescription(
             "records",
             vector<ColumnDescription> {ColumnDescription(0, "id", ColumnType::Integer)},
             vector<ColumnDescription> {ColumnDescription(1, "data", ColumnType::Text)}
-        ) 
+        ),
+        TableDescription(
+            "master",
+            vector<ColumnDescription> {ColumnDescription(0, "id", ColumnType::Integer)},
+            vector<ColumnDescription> {ColumnDescription(1, "fkey", ColumnType::Integer)}
+        )
     };
-    
+
+//    string sql =
+//            "create table master ("
+//            "id int primary key,"
+//            "fkey int,"
+//            "foreign key(fkey) references records(id) on delete set null"
+//            ");";
+//
+//    CreateTable(db, sql, (*tracked_tables)[1]);
+
+
     SetupHooks(db, tracked_tables);
-    //TestInsertWithHook(db);
     TestDeleteWithHook(db);
+
 
     sqlite3_close(db);
     delete tracked_tables;
