@@ -5,6 +5,12 @@
 #include "sqlite3.h"
 #include "schema.h"
 
-void SetupHooks(sqlite3* db, std::vector<TableDescription>* tracked_table_names);
+struct HookContext {
+    uint64_t replica_id;
+    int64_t logical_time;
+    std::vector<TableDescription> tracked_tables;
+};
+
+void SetupHooks(sqlite3* db, HookContext* context);
 
 #endif // !HOOKS_H

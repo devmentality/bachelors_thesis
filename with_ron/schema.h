@@ -53,6 +53,7 @@ private:
 
 void Run(sqlite3* db, const std::string& sql);
 void SetupCurrentOndxTable(sqlite3* db);
+int64_t ReadCurrentLogicalTimestamp(sqlite3* db);
 void CreateTriggers(sqlite3* db, const TableDescription& table_description);
 
 #endif // !SCHEMA_H

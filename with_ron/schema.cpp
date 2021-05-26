@@ -67,3 +67,26 @@ void SetupCurrentOndxTable(sqlite3* db) {
     Run(db, create_table_sql);
     Run(db, init_current_ondx);
 }
+
+int64_t ReadCurrentLogicalTimestamp(sqlite3* db) {
+    auto sql = "select * from curr_ondx";
+    auto result_ptr = new int64_t;
+
+    auto callback = [](void *result, int, char **argv, char **) -> int {
+        auto curr_ondx = atoll(argv[0]);
+        (*(int64_t*)result) = curr_ondx;
+        return 0;
+    };
+
+    char* zErrMsg = nullptr;
+
+    int rc = sqlite3_exec(db, sql, callback, result_ptr, &zErrMsg);
+
+    if (rc != SQLITE_OK) {
+        cerr << "SQL error: " << zErrMsg << endl;
+        sqlite3_free(zErrMsg);
+    }
+    auto result = *result_ptr;
+    delete result_ptr;
+    return result;
+}

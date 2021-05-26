@@ -40,7 +40,7 @@ void TestSchemaSetup(sqlite3 *db, const TableDescription& sample_table) {
 void TestInsertWithHook(sqlite3* db) {
     string insert_record_sql =
         "insert into records(data, id) " \
-        "values('Hello!', 18);";
+        "values('Hellolleh21!', 21);";
 
     Run(db, insert_record_sql);
 }
@@ -68,36 +68,33 @@ int main(int argn, char** args) {
         return 0;
     }
     cout << "Opened database successfully" << endl;
-    TurnForeignKetSupportOn(db);
+    //SetupCurrentOndxTable(db);
 
-    auto tracked_tables = new vector<TableDescription> { 
-        TableDescription(
-            "records",
-            vector<ColumnDescription> {ColumnDescription(0, "id", ColumnType::Integer)},
-            vector<ColumnDescription> {ColumnDescription(1, "data", ColumnType::Text)}
-        ),
-        TableDescription(
-            "master",
-            vector<ColumnDescription> {ColumnDescription(0, "id", ColumnType::Integer)},
-            vector<ColumnDescription> {ColumnDescription(1, "fkey", ColumnType::Integer)}
-        )
+    vector<TableDescription> tracked_tables {
+            TableDescription(
+                    "records",
+                    vector<ColumnDescription> {ColumnDescription(0, "id", ColumnType::Integer)},
+                    vector<ColumnDescription> {ColumnDescription(1, "data", ColumnType::Text)}
+            )
     };
 
-//    string sql =
-//            "create table master ("
-//            "id int primary key,"
-//            "fkey int,"
-//            "foreign key(fkey) references records(id) on delete set null"
-//            ");";
-//
-//    CreateTable(db, sql, (*tracked_tables)[1]);
+    string create_table_sql =
+            "create table records("  \
+            "id int primary key not null, " \
+            "data text not null);";
 
+    //CreateTable(db, create_table_sql, tracked_tables[0]);
 
-    SetupHooks(db, tracked_tables);
-    TestDeleteWithHook(db);
+    auto hook_context = new HookContext;
+    hook_context->logical_time = ReadCurrentLogicalTimestamp(db);
+    hook_context->replica_id = 1;
+    hook_context->tracked_tables = tracked_tables;
 
+    SetupHooks(db, hook_context);
+
+    TestInsertWithHook(db);
 
     sqlite3_close(db);
-    delete tracked_tables;
+    delete hook_context;
     return 0;
 }
