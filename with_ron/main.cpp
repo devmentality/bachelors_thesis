@@ -5,9 +5,11 @@
 #include "schema.h"
 #include "hooks.h"
 #include "sqlite3.h"
+#include "ron/ron-streams.hpp"
 
 
 using namespace std;
+using namespace ron;
 
 
 void CreateTable(sqlite3 *db, const string& sql,
@@ -37,10 +39,10 @@ void TestSchemaSetup(sqlite3 *db, const TableDescription& sample_table) {
 }
 
 
-void TestInsertWithHook(sqlite3* db) {
+void TestInsertWithHook(sqlite3* db, string id) {
     string insert_record_sql =
         "insert into records(data, id) " \
-        "values('Hellolleh21!', 21);";
+        "values('Hellolleh21!', " + id + ");";
 
     Run(db, insert_record_sql);
 }
@@ -51,21 +53,49 @@ void TestDeleteWithHook(sqlite3* db) {
     Run(db, delete_record_sql);
 }
 
-void TurnForeignKetSupportOn(sqlite3* db) {
+void TurnForeignKeySupportOn(sqlite3* db) {
     string sql = "PRAGMA foreign_keys = ON";
 
     Run(db, sql);
 }
 
 
-int main(int argn, char** args) {
+PROC WriteLog() {
+    RONtStream file{};
+    CALL(file.Open("ron_log.txt", Stream::WRITE));
+
+    auto id = Uuid::Lamport(1, 1);
+    auto ref = Uuid{"unknown"};
+    CALL(file.FeedOp(Op{id, ref, "kek"}));
+    ++id; ++id;
+    CALL(file.FeedOp(Op{id, ref, "kek2"}));
+
+    CALL(file.DrainAll());
+    CALL(file.Close());
+}
+
+
+PROC ReadLog() {
+    RONtStream file{};
+    CALL(file.Open("ron_log.txt", Stream::READ));
+
+    while(true) {
+        Op op;
+        CALL(file.DrainOp(op));
+        cout << op.ID().String() << endl;
+    }
+    CALL(file.Close());
+}
+
+
+void RunDb() {
     sqlite3* db;
-    char* zErrMsg = 0;
+    char* zErrMsg = nullptr;
     int rc = sqlite3_open("sample.db", &db);
 
     if (rc) {
         cerr << "Can't open database: " << sqlite3_errmsg(db) << endl;
-        return 0;
+        return;
     }
     cout << "Opened database successfully" << endl;
     //SetupCurrentOndxTable(db);
@@ -92,9 +122,18 @@ int main(int argn, char** args) {
 
     SetupHooks(db, hook_context);
 
-    TestInsertWithHook(db);
+    TestInsertWithHook(db, "17");
+    TestInsertWithHook(db, "18");
+    TestInsertWithHook(db, "19");
 
     sqlite3_close(db);
     delete hook_context;
+}
+
+
+int main(int argn, char** args) {
+    //MUST_OK(WriteLog(), "write failed");
+    MUST_OK(ReadLog(), "read failed");
+    //RunDb();
     return 0;
 }
