@@ -1,11 +1,12 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "sqlite3.h"
+#include "ron/ron-streams.hpp"
 #include "column_types.h"
 #include "schema.h"
 #include "hooks.h"
-#include "sqlite3.h"
-#include "ron/ron-streams.hpp"
+#include "log.h"
 
 
 using namespace std;
@@ -75,17 +76,7 @@ PROC WriteLog() {
 }
 
 
-PROC ReadLog() {
-    RONtStream file{};
-    CALL(file.Open("ron_log.txt", Stream::READ));
 
-    while(true) {
-        Op op;
-        CALL(file.DrainOp(op));
-        cout << op.ID().String() << endl;
-    }
-    CALL(file.Close());
-}
 
 
 void RunDb() {
@@ -133,7 +124,18 @@ void RunDb() {
 
 int main(int argn, char** args) {
     //MUST_OK(WriteLog(), "write failed");
-    MUST_OK(ReadLog(), "read failed");
+    vector<Op> ops;
+    MUST_OK(ReadLog(ops, "ron_log.txt"), "read failed");
     //RunDb();
+    for(auto op: ops)
+        cout << op.ID().String() << endl;
+
+    auto mapping = BuildPrimaryKeyMapping(ops);
+
+    for(auto item: *mapping) {
+        cout << item.first << " " << item.second.ID().String() << endl;
+    }
+
+    delete mapping;
     return 0;
 }
