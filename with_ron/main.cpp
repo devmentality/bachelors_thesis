@@ -123,19 +123,18 @@ void RunDb() {
 
 
 int main(int argn, char** args) {
-    //MUST_OK(WriteLog(), "write failed");
-    vector<Op> ops;
-    MUST_OK(ReadLog(ops, "ron_log.txt"), "read failed");
-    //RunDb();
-    for(auto op: ops)
+    vector<Op> log_ops;
+    vector<Op> patch;
+    MUST_OK(ReadLog(log_ops, "ron_log.txt"), "read failed");
+    MUST_OK(ReadLog(patch, "patch.txt"), "read failed");
+
+    vector<Op> new_ops;
+
+    MergeLogs(new_ops, log_ops, patch);
+
+    for(auto op: new_ops) {
         cout << op.ID().String() << endl;
-
-    auto mapping = BuildPrimaryKeyMapping(ops);
-
-    for(auto item: *mapping) {
-        cout << item.first << " " << item.second.ID().String() << endl;
     }
 
-    delete mapping;
     return 0;
 }

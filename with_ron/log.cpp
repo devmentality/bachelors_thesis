@@ -61,6 +61,26 @@ map<size_t, Op>* BuildPrimaryKeyMapping(const vector<Op> &operations) {
     return mapping;
 }
 
+map<Uuid, Op>* BuildUuidMapping(const vector<Op> &operations) {
+    auto mapping = new map<Uuid, Op>();
+
+    for(auto op: operations)
+        (*mapping)[op.ID()] = op;
+
+    return mapping;
+}
+
+
+void MergeLogs(vector<Op>& applied_ops_out, const vector<Op> &log, const vector<Op>& patch) {
+    auto log_mapping = BuildUuidMapping(log);
+
+    for(auto op: patch) {
+        if (log_mapping->find(op.ID()) == log_mapping->end())
+            applied_ops_out.push_back(op);
+    }
+
+    delete log_mapping;
+}
 
 
 
