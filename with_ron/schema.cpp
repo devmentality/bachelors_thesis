@@ -12,6 +12,7 @@ void TableDescription::BuildColumnsMapping() {
     for (const auto& col : other_columns) column_by_index[col.index] = col;
 }
 
+
 int TableDescription::ColumnsAmount() {
     return pkey_columns.size() + other_columns.size();
 }
@@ -67,6 +68,7 @@ void SetupCurrentOndxTable(sqlite3* db) {
     Run(db, create_table_sql);
     Run(db, init_current_ondx);
 }
+
 
 int64_t ReadCurrentLogicalTimestamp(sqlite3* db) {
     auto sql = "select * from curr_ondx";

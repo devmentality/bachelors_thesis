@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "sqlite3.h"
 #include "schema.h"
+#include "log.h"
 #include "column_types.h"
 #include "ron/ron.hpp"
 
@@ -140,19 +141,6 @@ Op MakeDeleteOpFromValues(
 }
 
 
-PROC SerializeToRon(HookContext* context) {
-    RONtStream file{};
-    CALL(file.Open("ron_log.txt", Stream::APPEND));
-    for(auto op: context->transaction_ops) {
-        CALL(file.FeedOp(op));
-        CALL(file.FeedString(",\n"));
-    }
-    CALL(file.DrainAll());
-    CALL(file.Close());
-    DONE;
-}
-
-
 void HandleInsert(sqlite3 *db, const TableDescription& table, HookContext* context, Uuid op_uuid) {
     auto values = ReadNewValues(db);
     auto areValidTypes = AreValidTypes(table, values);
@@ -204,7 +192,7 @@ void PreupdateHook(
 int CommitHook(void* ctx) {
     auto context = (HookContext*)ctx;
     cout << "Commit invoked" << endl;
-    MUST_OK(SerializeToRon(context), "transaction was not written");
+    MUST_OK(SerializeToRon("ron_log.txt", context->transaction_ops), "transaction was not written");
     context->transaction_ops.clear();
     return 0;
 }

@@ -6,7 +6,14 @@
 #include "ron/const.hpp"
 
 ron::PROC ReadLog(std::vector<ron::Op>& operations,  const std::string& file_name);
+
+ron::PROC SerializeToRon(const std::string& log_file_name, const std::vector<ron::Op>& operations);
+
 std::map<size_t, ron::Op>* BuildPrimaryKeyMapping(const std::vector<ron::Op> &operations);
-void MergeLogs(std::vector<ron::Op>& applied_ops_out, const std::vector<ron::Op> &log, const std::vector<ron::Op>& patch);
+
+void MergeLogs(
+        std::vector<ron::Op>& applied_ops_out,
+        const std::vector<ron::Op> &log,
+        const std::vector<ron::Op>& patch);
 
 #endif //MAINPROJ_LOG_H
