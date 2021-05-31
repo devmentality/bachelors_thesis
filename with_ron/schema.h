@@ -6,6 +6,7 @@
 #include <map>
 #include "sqlite3.h"
 #include "column_types.h"
+#include "ron/op.hpp"
 
 
 struct ColumnDescription {
@@ -48,6 +49,17 @@ public:
 
 private:
     void BuildColumnsMapping();
+};
+
+
+struct Operation {
+    std::string sql_operation;
+    ron::Op ron_operation;
+
+    Operation(std::string sql_operation, ron::Op ron_operation) {
+        this->sql_operation = std::move(sql_operation);
+        this->ron_operation = std::move(ron_operation);
+    }
 };
 
 

@@ -1,8 +1,6 @@
 #include <map>
 #include <vector>
-#include <string>
-#include "ron/ron-streams.hpp"
-#include "sqlite3.h"
+#include "ron/op.hpp"
 #include "schema.h"
 
 using namespace ron;
@@ -27,6 +25,28 @@ Tuple GetKeyTuple(const Op& op) {
 }
 
 
+pair<Tuple, Tuple> SplitOperation(const Op& op) {
+    auto reader = op.Values().ReadAtoms();
+    Tuple key;
+    Tuple value;
+
+    while(true) {
+        Tuple::Box b;
+        reader.ReadAtom(b);
+        if (b == Uuid{"~"}) break;
+        key.PushBox(b);
+    }
+
+    while(!reader.IsEmpty()) {
+        Tuple::Box b;
+        reader.ReadAtom(b);
+        value.PushBox(b);
+    }
+
+    return {key, value};
+}
+
+
 map<size_t, Op>* BuildPrimaryKeyMapping(const vector<Op> &operations) {
     hash<Tuple> h{};
     auto mapping = new map<size_t, Op>();
@@ -48,112 +68,37 @@ map<size_t, Op>* BuildPrimaryKeyMapping(const vector<Op> &operations) {
     return mapping;
 }
 
+// Main Lww logic
+void GenerateResultingOperations(
+        vector<Operation>& resulting_operations,
+        const vector<Op>& log,
+        const vector<Op>& new_ops) {
+    hash<Tuple> h{};
 
-string GenerateDeleteSqlQuery(const TableDescription& table) {
-    auto sql = "delete from " + table.name + " where ";
-    auto condition = table.pkey_columns[0].name + " = @" + table.pkey_columns[0].name;
-    sql += condition;
-    for (auto i = 1; i < table.pkey_columns.size(); i++) {
-        condition = table.pkey_columns[i].name + " = @" + table.pkey_columns[i].name;
-        sql += " and " + condition;
-    }
-    sql += ";";
-    return sql;
-}
+    auto log_mapping = BuildPrimaryKeyMapping(log);
 
+    for(const auto& op: new_ops) {
+        auto op_parts = SplitOperation(op);
+        auto op_key = op_parts.first;
+        auto op_value = op_parts.second;
+        auto key_hash = h(op_key);
 
-void BindNextParameter(const ColumnDescription& column, Tuple::AtomReader& reader, sqlite3_stmt* statement) {
-    auto parameter_index = sqlite3_bind_parameter_index(statement, column.name.c_str());
-    switch (column.type) {
-        case ColumnType::Integer: {
-            int64_t int_value;
-            reader.ReadInteger(int_value);
-            sqlite3_bind_int64(statement, parameter_index, int_value);
-            break;
-        }
-        case ColumnType::Text: {
-            string text_value;
-            reader.ReadUtf8String(text_value);
-            sqlite3_bind_text(statement, parameter_index, text_value.c_str(), text_value.length(), SQLITE_TRANSIENT);
-            break;
-        }
-        case ColumnType::Float: {
-            double float_value;
-            reader.ReadFloat(float_value);
-            sqlite3_bind_double(statement, parameter_index, float_value);
-            break;
+        if (log_mapping->find(key_hash) != log_mapping->end()) {
+            auto prev_op = (*log_mapping)[key_hash];
+            auto prev_op_value = SplitOperation(prev_op).second;
+
+            if (prev_op.ID() > op.ID())
+                continue;
+
+            if (!op_value.IsEmpty() && prev_op_value.IsEmpty()) { // insert deleted row
+                resulting_operations.emplace_back("insert", op);
+            } else if (op_value.IsEmpty() && !prev_op_value.IsEmpty()) { // delete present row
+                resulting_operations.emplace_back("delete", op);
+            } else if (!op_value.IsEmpty() && !prev_op_value.IsEmpty()) { // conflicting inserts
+                throw domain_error("conflicting inserts are not supported for now");
+            }
         }
     }
-}
 
-// TODO: handle nulls
-void BindParametersForDeleteStatement(const Op& op, const TableDescription& table, sqlite3_stmt* statement) {
-    auto op_key = GetKeyTuple(op);
-    auto reader = op_key.ReadAtoms();
-
-    for(const auto& column: table.pkey_columns) {
-        BindNextParameter(column, reader, statement);
-    }
-}
-
-
-sqlite3_stmt* GeneratePreparedStatement(
-        const Op& op, sqlite3* db, const TableDescription& table,
-        string (* sql_generator)(const TableDescription&),
-        void (* param_binder)(const Op&, const TableDescription&, sqlite3_stmt*)) {
-    sqlite3_stmt* statement = nullptr;
-
-    auto sql = sql_generator(table);
-    const char* pz_tail = nullptr;
-    sqlite3_prepare_v2(db, sql.c_str(), sql.length(), &statement, &pz_tail);
-    param_binder(op, table, statement);
-
-    return statement;
-}
-
-
-sqlite3_stmt* GenerateDeletePreparedStatement(const Op& op, sqlite3* db, const TableDescription& table) {
-    return GeneratePreparedStatement(op, db, table, GenerateDeleteSqlQuery, BindParametersForDeleteStatement);
-}
-
-
-string GenerateInsertSqlStatement(const TableDescription& table) {
-    /*
-     * insert into <table_name> (<col_name>, <col_name>, ...)
-     * values (@<col_name>, @<col_name>, ...)
-     */
-
-    auto header = table.pkey_columns[0].name;
-    auto values = "@" + table.pkey_columns[0].name;
-    for(auto i = 1; i < table.pkey_columns.size(); i++) {
-        header += ", " + table.pkey_columns[i].name;
-        values += ", @" + table.pkey_columns[i].name;
-    }
-
-    for(const auto& column: table.other_columns) {
-        header += ", " + column.name;
-        values += ", @" + column.name;
-    }
-
-    auto sql = "insert into " + table.name + " (" + header + ") values (" + values + ");";
-    return sql;
-}
-
-
-void BindParametersForInsertStatement(const Op& op, const TableDescription& table, sqlite3_stmt* statement) {
-    auto op_key = GetKeyTuple(op);
-    auto reader = op_key.ReadAtoms();
-
-    for (const auto &column: table.pkey_columns) {
-        BindNextParameter(column, reader, statement);
-    }
-
-    for(const auto &column: table.other_columns) {
-        BindNextParameter(column, reader, statement);
-    }
-}
-
-
-sqlite3_stmt* GenerateInsertPreparedStatement(const Op& op, sqlite3* db, const TableDescription& table) {
-    return GeneratePreparedStatement(op, db, table, GenerateInsertSqlStatement, BindParametersForInsertStatement);
+    delete log_mapping;
 }
