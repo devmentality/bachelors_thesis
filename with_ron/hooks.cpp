@@ -89,7 +89,7 @@ void PushValuesForColumns(
         switch (type)
         {
             case SQLITE_INTEGER:
-                op.Values().PushInteger(sqlite3_value_int(value)); // TODO: use int ot int64?
+                op.Values().PushInteger(sqlite3_value_int64(value));
                 break;
             case SQLITE_FLOAT:
                 op.Values().PushFloat(sqlite3_value_double(value));
