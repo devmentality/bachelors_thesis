@@ -1,0 +1,11 @@
+#!/usr/local/bin/drone
+# this script generates status.cpp from status.ron
+
+print '#include "const.hpp"',
+print 'namespace ron {',
+print 'ErrorList ERRORS = {';
+
+for id status string message in '../ron/status.ron',
+    print '\t{' status ', (Codepoint*)U"' message '"},';
+
+print '};\n}';

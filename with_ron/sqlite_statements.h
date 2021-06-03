@@ -1,8 +1,0 @@
-//
-// Created by devmentality on 31/05/2021.
-//
-
-#ifndef MAINPROJ_SQLITE_STATEMENTS_H
-#define MAINPROJ_SQLITE_STATEMENTS_H
-
-#endif //MAINPROJ_SQLITE_STATEMENTS_H
