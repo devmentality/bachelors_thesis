@@ -8,6 +8,7 @@
 #include "hooks.h"
 #include "log.h"
 #include "lww.h"
+#include "version_vector.h"
 
 
 using namespace std;
