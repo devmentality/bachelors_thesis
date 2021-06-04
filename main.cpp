@@ -7,6 +7,7 @@
 #include "schema.h"
 #include "hooks.h"
 #include "log.h"
+#include "lww.h"
 
 
 using namespace std;
@@ -134,6 +135,13 @@ int main(int argn, char** args) {
 
     for(auto op: new_ops) {
         cout << op.ID().String() << endl;
+    }
+
+    vector<DbOperation> db_ops;
+    GenerateResultingOperations(db_ops, log_ops, new_ops);
+
+    for(auto db_op: db_ops) {
+        cout << db_op.sql_operation << " " << db_op.new_operation.ID().String() << endl;
     }
 
     return 0;

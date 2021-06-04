@@ -52,13 +52,14 @@ private:
 };
 
 
-struct Operation {
+struct DbOperation {
     std::string sql_operation;
-    ron::Op ron_operation;
+    ron::Op new_operation;
+    ron::Op old_operation;
 
-    Operation(std::string sql_operation, ron::Op ron_operation) {
+    DbOperation(std::string sql_operation, ron::Op new_operation){
         this->sql_operation = std::move(sql_operation);
-        this->ron_operation = std::move(ron_operation);
+        this->new_operation = std::move(new_operation);
     }
 };
 

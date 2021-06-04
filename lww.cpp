@@ -70,9 +70,10 @@ map<size_t, Op>* BuildPrimaryKeyMapping(const vector<Op> &operations) {
 
 // Main Lww logic
 void GenerateResultingOperations(
-        vector<Operation>& resulting_operations,
+        vector<DbOperation>& resulting_operations,
         const vector<Op>& log,
-        const vector<Op>& new_ops) {
+        const vector<Op>& new_ops
+) {
     hash<Tuple> h{};
 
     auto log_mapping = BuildPrimaryKeyMapping(log);
@@ -95,7 +96,15 @@ void GenerateResultingOperations(
             } else if (op_value.IsEmpty() && !prev_op_value.IsEmpty()) { // delete present row
                 resulting_operations.emplace_back("delete", op);
             } else if (!op_value.IsEmpty() && !prev_op_value.IsEmpty()) { // conflicting inserts
-                throw domain_error("conflicting inserts are not supported for now");
+                DbOperation db_op("update", op);
+                db_op.old_operation = prev_op;
+                resulting_operations.push_back(db_op);
+            }
+        } else {
+            if (!op_value.IsEmpty()) { // newly inserted row
+                resulting_operations.emplace_back("insert", op);
+            } else {
+                throw domain_error("consistency failure");
             }
         }
     }

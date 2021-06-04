@@ -428,7 +428,7 @@ SQLITE_API int sqlite3_exec(
 #define SQLITE_LOCKED       6   /* A table in the database is locked */
 #define SQLITE_NOMEM        7   /* A malloc() failed */
 #define SQLITE_READONLY     8   /* Attempt to write a readonly database */
-#define SQLITE_INTERRUPT    9   /* Operation terminated by sqlite3_interrupt()*/
+#define SQLITE_INTERRUPT    9   /* DbOperation terminated by sqlite3_interrupt()*/
 #define SQLITE_IOERR       10   /* Some kind of disk I/O error occurred */
 #define SQLITE_CORRUPT     11   /* The database disk image is malformed */
 #define SQLITE_NOTFOUND    12   /* Unknown opcode in sqlite3_file_control() */
@@ -3091,7 +3091,7 @@ SQLITE_API int sqlite3_set_authorizer(
 #define SQLITE_PRAGMA               19   /* Pragma Name     1st arg or NULL */
 #define SQLITE_READ                 20   /* Table Name      Column Name     */
 #define SQLITE_SELECT               21   /* NULL            NULL            */
-#define SQLITE_TRANSACTION          22   /* Operation       NULL            */
+#define SQLITE_TRANSACTION          22   /* DbOperation       NULL            */
 #define SQLITE_UPDATE               23   /* Table Name      Column Name     */
 #define SQLITE_ATTACH               24   /* Filename        NULL            */
 #define SQLITE_DETACH               25   /* Database Name   NULL            */
@@ -3101,7 +3101,7 @@ SQLITE_API int sqlite3_set_authorizer(
 #define SQLITE_CREATE_VTABLE        29   /* Table Name      Module Name     */
 #define SQLITE_DROP_VTABLE          30   /* Table Name      Module Name     */
 #define SQLITE_FUNCTION             31   /* NULL            Function Name   */
-#define SQLITE_SAVEPOINT            32   /* Operation       Savepoint Name  */
+#define SQLITE_SAVEPOINT            32   /* DbOperation       Savepoint Name  */
 #define SQLITE_COPY                  0   /* No longer used */
 #define SQLITE_RECURSIVE            33   /* NULL            NULL            */
 
@@ -7726,7 +7726,7 @@ SQLITE_API int sqlite3_file_control(sqlite3*, const char *zDbName, int op, void*
 SQLITE_API int sqlite3_test_control(int op, ...);
 
 /*
-** CAPI3REF: Testing Interface Operation Codes
+** CAPI3REF: Testing Interface DbOperation Codes
 **
 ** These constants are the valid operation code parameters used
 ** as the first argument to [sqlite3_test_control()].
@@ -10531,7 +10531,7 @@ SQLITE_API int sqlite3changeset_start_v2(
 SQLITE_API int sqlite3changeset_next(sqlite3_changeset_iter *pIter);
 
 /*
-** CAPI3REF: Obtain The Current Operation From A Changeset Iterator
+** CAPI3REF: Obtain The Current DbOperation From A Changeset Iterator
 ** METHOD: sqlite3_changeset_iter
 **
 ** The pIter argument passed to this function may either be an iterator
