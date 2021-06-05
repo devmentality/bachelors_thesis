@@ -81,10 +81,11 @@ void UpdateVersionVector(
 }
 
 
-void MoveOndx(sqlite3* db, uint64_t replica_id, int delta) {
+void MoveVector(sqlite3* db, uint64_t replica_id, int ondx_delta, int clock_delta) {
     auto sql = "update version_vector set " \
-                "ondx = ondx + " + to_string(delta) +
-               "where replica_id = " + to_string(replica_id);
+                "ondx = ondx + " + to_string(ondx_delta) + ", " \
+                "clock = clock + " + to_string(clock_delta) + " " \
+                "where replica_id = " + to_string(replica_id);
 
     Run(db, sql);
 }

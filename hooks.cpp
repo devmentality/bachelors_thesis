@@ -225,7 +225,7 @@ void Begin(sqlite3* db) {
 
 
 void Commit(sqlite3* db, ReplicaState* context) {
-    MoveOndx(db, context->replica_id, context->transaction_ops.size());
+    MoveVector(db, context->replica_id, context->transaction_ops.size(), context->transaction_ops.size());
     auto sql = "commit transaction;";
     Run(db, sql);
 }

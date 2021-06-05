@@ -35,13 +35,14 @@ void TestSchemaSetup(sqlite3 *db, const TableDescription& sample_table) {
 }
 
 
-void TestInsertWithHook(sqlite3* db, string id) {
-
+void TestInsertWithHook(sqlite3* db, string id, ReplicaState* context) {
+    Begin(db);
     string insert_record_sql =
         "insert into records(data, id) " \
         "values('Hellolleh21!', " + id + ");";
 
     Run(db, insert_record_sql);
+    Commit(db, context);
 }
 
 
@@ -88,14 +89,14 @@ void RunDb() {
             )
     };
 
-    SetupVersionVector(replica_id, db);
+    //SetupVersionVector(replica_id, db);
 
     string create_table_sql =
             "create table records("  \
             "id int primary key not null, " \
             "data text not null);";
 
-    Run(db, create_table_sql);
+    //Run(db, create_table_sql);
 
     auto replica_state = new ReplicaState;
     replica_state->replica_id = replica_id;
@@ -105,9 +106,9 @@ void RunDb() {
 
     SetupHooks(db, replica_state);
 
-    TestInsertWithHook(db, "17");
-    TestInsertWithHook(db, "18");
-    TestInsertWithHook(db, "19");
+    TestInsertWithHook(db, "29", replica_state);
+    TestInsertWithHook(db, "30", replica_state);
+    TestInsertWithHook(db, "31", replica_state);
 
     sqlite3_close(db);
     delete replica_state;
@@ -138,6 +139,6 @@ void RunLogMerge() {
 
 
 int main(int argn, char** args) {
-
+    RunDb();
     return 0;
 }
