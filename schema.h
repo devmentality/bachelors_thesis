@@ -65,7 +65,6 @@ struct DbOperation {
 
 
 void Run(sqlite3* db, const std::string& sql);
-void CreateTriggers(sqlite3* db, const TableDescription& table_description);
 
 #endif // !SCHEMA_H
 

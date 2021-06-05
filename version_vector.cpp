@@ -2,23 +2,9 @@
 #include <string>
 #include "sqlite3.h"
 #include "schema.h"
+#include "replica_state.h"
 
 using namespace std;
-
-
-void SetupCurrentOndxTable(sqlite3* db) {
-    string create_table_sql =
-            "create table curr_ondx (" \
-            "value int not null default 0" \
-        ")";
-
-    string init_current_ondx =
-            "insert into curr_ondx (value)" \
-        "values (0)";
-
-    Run(db, create_table_sql);
-    Run(db, init_current_ondx);
-}
 
 
 void SetupVersionVector(uint64_t replica_id, sqlite3* db) {
@@ -37,31 +23,68 @@ void SetupVersionVector(uint64_t replica_id, sqlite3* db) {
 }
 
 
-pair<int64_t, int64_t> ReadVersionVector(uint64_t replica_id, sqlite3* db) {
-    auto sql = "select ondx, clock from version_vector where replica_id = " + to_string(replica_id);
-    auto result_ptr = new pair<int64_t, int64_t>;
+void ReadVersionVector(map<uint64_t, Version>& version_vector, sqlite3* db) {
+    auto sql = "select replica_id, ondx, clock from version_vector";
 
-    auto callback = [](void *result, int, char **argv, char **) -> int {
-        auto ondx = atoll(argv[0]);
-        auto clock = atoll(argv[1]);
-        ((pair<int64_t, int64_t>*)result)->first = ondx;
-        ((pair<int64_t, int64_t>*)result)->first = clock;
+    auto callback = [](void *param, int, char **argv, char **) -> int {
+        auto version_vector = (map<uint64_t, Version>*)param;
+        auto replica_id = atoll(argv[0]);
+        auto ondx = atoll(argv[1]);
+        auto clock = atoll(argv[2]);
+        (*version_vector)[replica_id] = Version(ondx, clock);
         return 0;
     };
 
     char* zErrMsg = nullptr;
-
-    int rc = sqlite3_exec(db, sql.c_str(), callback, result_ptr, &zErrMsg);
+    int rc = sqlite3_exec(db, sql, callback, &version_vector, &zErrMsg);
 
     if (rc != SQLITE_OK) {
         cerr << "SQL error: " << zErrMsg << endl;
         sqlite3_free(zErrMsg);
     }
-
-    auto result = *result_ptr;
-    delete result_ptr;
-    return result;
 }
 
 
+void InsertReplicaClock(sqlite3* db, uint64_t replica_id, int64_t clock) {
+    auto sql = "insert into version_vector (replica_id, ondx, clock) " \
+               "values (" + to_string(replica_id) + ", " + "0, " + to_string(clock) + ");";
 
+    Run(db, sql);
+}
+
+
+void UpdateReplicaClock(sqlite3* db, uint64_t replica_id, int64_t clock) {
+    auto sql = "update version_vector set " \
+                "clock = " + to_string(clock) +
+                "where replica_id = " + to_string(replica_id);
+
+    Run(db, sql);
+}
+
+
+void UpdateVersionVector(
+        sqlite3* db,
+        const map<uint64_t, Version>& local,
+        const map<uint64_t, Version>& remote
+) {
+    for(auto item: remote) {
+        auto replica_id = item.first;
+        auto remote_clock = item.second.clock;
+
+        if (local.find(replica_id) != local.end() &&
+            local.at(replica_id).clock < remote_clock) {
+            UpdateReplicaClock(db, replica_id, remote_clock);
+        } else {
+            InsertReplicaClock(db, replica_id, remote_clock);
+        }
+    }
+}
+
+
+void MoveOndx(sqlite3* db, uint64_t replica_id, int delta) {
+    auto sql = "update version_vector set " \
+                "ondx = ondx + " + to_string(delta) +
+               "where replica_id = " + to_string(replica_id);
+
+    Run(db, sql);
+}

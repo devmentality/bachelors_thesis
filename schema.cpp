@@ -18,21 +18,6 @@ int TableDescription::ColumnsAmount() {
 }
 
 
-/*
-    Makes sql for triggers after certain operation.
-    Trigger's only responsibility is to increment curr_ondx value
-*/
-string MakeTriggerSql(const TableDescription& table_description, const string& op_name) {
-    auto sql = "create trigger __" + table_description.name + "_" + op_name + "\n";
-    sql += "after " + op_name + " on " + table_description.name + " for each row\n";
-    sql += "begin\n";
-    sql += "update curr_ondx set value = value + 1;\n";
-    sql += "end;";
-
-    return sql;
-}
-
-
 void Run(sqlite3* db, const string& sql) {
     char* zErrMsg = nullptr;
 
@@ -41,15 +26,5 @@ void Run(sqlite3* db, const string& sql) {
     if (rc != SQLITE_OK) {
         cerr << "SQL error: " << zErrMsg << endl;
         sqlite3_free(zErrMsg);
-    }
-}
-
-
-void CreateTriggers(sqlite3* db, const TableDescription& table_description) {
-    string operations[2]{ "insert" , "delete"  };
-
-    for (const auto& operation : operations) {
-        auto sql = MakeTriggerSql(table_description, operation);
-        Run(db, sql);
     }
 }

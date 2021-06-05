@@ -15,22 +15,15 @@ using namespace std;
 using namespace ron;
 
 
-void CreateTable(sqlite3 *db, const string& sql,
-                 const TableDescription& table_description) {
-    Run(db, sql);
-    CreateTriggers(db, table_description);
-}
-
-
 void TestSchemaSetup(sqlite3 *db, const TableDescription& sample_table) {
-    SetupCurrentOndxTable(db);
+    // SetupCurrentOndxTable(db);
 
     string create_table_sql = 
         "create table records("  \
         "id int primary key not null, " \
         "data text not null);";
 
-    CreateTable(db, create_table_sql, sample_table);
+    // CreateTable(db, create_table_sql, sample_table);
 
     string insert_record_sql =
         "insert into records(id, data) " \
@@ -108,8 +101,8 @@ void RunDb() {
 
     //CreateTable(db, create_table_sql, tracked_tables[0]);
 
-    auto hook_context = new HookContext;
-    hook_context->logical_time = ReadCurrentLogicalTimestamp(db);
+    auto hook_context = new ReplicaState;
+    //hook_context->logical_time = ReadCurrentLogicalTimestamp(db);
     hook_context->replica_id = 1;
     hook_context->tracked_tables = tracked_tables;
 
