@@ -7,6 +7,7 @@
 #include "schema.h"
 #include "log.h"
 #include "column_types.h"
+#include "version_vector.h"
 #include "ron/ron.hpp"
 
 
@@ -210,7 +211,28 @@ int CommitHook(void* ctx) {
 }
 
 
+void RollBackHook(void* ctx) {
+    auto context = (ReplicaState*) ctx;
+    cout << "Transaction rolled back" << endl;
+    context->transaction_ops.clear();
+}
+
+
+void Begin(sqlite3* db) {
+    auto sql = "begin transaction;";
+    Run(db, sql);
+}
+
+
+void Commit(sqlite3* db, ReplicaState* context) {
+    MoveOndx(db, context->replica_id, context->transaction_ops.size());
+    auto sql = "commit transaction;";
+    Run(db, sql);
+}
+
+
 void SetupHooks(sqlite3* db, ReplicaState* context) {
     sqlite3_preupdate_hook(db, PreupdateHook, context);
     sqlite3_commit_hook(db, CommitHook, context);
+    sqlite3_rollback_hook(db, RollBackHook, context);
 }

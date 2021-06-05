@@ -36,6 +36,7 @@ void TestSchemaSetup(sqlite3 *db, const TableDescription& sample_table) {
 
 
 void TestInsertWithHook(sqlite3* db, string id) {
+
     string insert_record_sql =
         "insert into records(data, id) " \
         "values('Hellolleh21!', " + id + ");";
@@ -43,16 +44,11 @@ void TestInsertWithHook(sqlite3* db, string id) {
     Run(db, insert_record_sql);
 }
 
+
 void TestDeleteWithHook(sqlite3* db) {
     string delete_record_sql = "delete from records where id = 1;";
 
     Run(db, delete_record_sql);
-}
-
-void TurnForeignKeySupportOn(sqlite3* db) {
-    string sql = "PRAGMA foreign_keys = ON";
-
-    Run(db, sql);
 }
 
 
@@ -71,9 +67,6 @@ PROC WriteLog() {
 }
 
 
-
-
-
 void RunDb() {
     sqlite3* db;
     char* zErrMsg = nullptr;
@@ -84,7 +77,8 @@ void RunDb() {
         return;
     }
     cout << "Opened database successfully" << endl;
-    //SetupCurrentOndxTable(db);
+
+    uint64_t replica_id = 12345;
 
     vector<TableDescription> tracked_tables {
             TableDescription(
@@ -94,30 +88,33 @@ void RunDb() {
             )
     };
 
+    SetupVersionVector(replica_id, db);
+
     string create_table_sql =
             "create table records("  \
             "id int primary key not null, " \
             "data text not null);";
 
-    //CreateTable(db, create_table_sql, tracked_tables[0]);
+    Run(db, create_table_sql);
 
-    auto hook_context = new ReplicaState;
-    //hook_context->logical_time = ReadCurrentLogicalTimestamp(db);
-    hook_context->replica_id = 1;
-    hook_context->tracked_tables = tracked_tables;
+    auto replica_state = new ReplicaState;
+    replica_state->replica_id = replica_id;
+    replica_state->tracked_tables = tracked_tables;
+    replica_state->is_merging = false;
+    ReadVersionVector(replica_state->version_vector, db);
 
-    SetupHooks(db, hook_context);
+    SetupHooks(db, replica_state);
 
     TestInsertWithHook(db, "17");
     TestInsertWithHook(db, "18");
     TestInsertWithHook(db, "19");
 
     sqlite3_close(db);
-    delete hook_context;
+    delete replica_state;
 }
 
 
-int main(int argn, char** args) {
+void RunLogMerge() {
     vector<Op> log_ops;
     vector<Op> patch;
     MUST_OK(ReadLog(log_ops, "ron_log.txt"), "read failed");
@@ -137,6 +134,10 @@ int main(int argn, char** args) {
     for(auto db_op: db_ops) {
         cout << db_op.sql_operation << " " << db_op.new_operation.ID().String() << endl;
     }
+}
+
+
+int main(int argn, char** args) {
 
     return 0;
 }

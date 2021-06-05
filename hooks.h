@@ -9,5 +9,7 @@
 #include "ron/op.hpp"
 
 void SetupHooks(sqlite3* db, ReplicaState* context);
+void Begin(sqlite3* db);
+void Commit(sqlite3* db, ReplicaState* context);
 
 #endif // !HOOKS_H

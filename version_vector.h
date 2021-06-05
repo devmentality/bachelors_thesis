@@ -5,7 +5,7 @@
 #include "sqlite3.h"
 
 
-std::pair<int64_t, int64_t> ReadVersionVector(uint64_t replica_id, sqlite3* db);
+void ReadVersionVector(std::map<uint64_t, Version>& version_vector, sqlite3* db);
 void SetupVersionVector(uint64_t replica_id, sqlite3* db);
 void UpdateVersionVector(
         sqlite3* db,
