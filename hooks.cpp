@@ -191,7 +191,9 @@ void PreupdateHook(
     if (!TryGetTableDescription(tracked_tables, table_name, tbl))
         return;
 
-    auto op_uuid = Uuid::Lamport(context->logical_time + 1, context->replica_id);
+    auto op_uuid = Uuid::Lamport(
+            context->version_vector[context->replica_id].clock + 1,
+            context->replica_id);
     if (operation == SQLITE_INSERT) {
         HandleInsert(db, tbl, context, op_uuid);
     } else if (operation == SQLITE_DELETE) {
@@ -214,6 +216,7 @@ int CommitHook(void* ctx) {
 void RollBackHook(void* ctx) {
     auto context = (ReplicaState*) ctx;
     cout << "Transaction rolled back" << endl;
+    context->version_vector[context->replica_id].clock -= context->transaction_ops.size();
     context->transaction_ops.clear();
 }
 

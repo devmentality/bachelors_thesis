@@ -106,9 +106,9 @@ void RunDb() {
 
     SetupHooks(db, replica_state);
 
-    TestInsertWithHook(db, "29", replica_state);
-    TestInsertWithHook(db, "30", replica_state);
-    TestInsertWithHook(db, "31", replica_state);
+    TestInsertWithHook(db, "33", replica_state);
+    TestInsertWithHook(db, "34", replica_state);
+    TestInsertWithHook(db, "35", replica_state);
 
     sqlite3_close(db);
     delete replica_state;
