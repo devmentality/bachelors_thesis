@@ -71,13 +71,13 @@ void UpdateVersionVector(
         auto replica_id = item.first;
         auto remote_clock = item.second.clock;
 
-        if (local.find(replica_id) != local.end() &&
-            local.at(replica_id).clock < remote_clock) {
-            local[replica_id].clock = remote_clock;
-            UpdateReplicaClock(db, replica_id, remote_clock);
-        } else {
+        if (local.find(replica_id) == local.end())  {
             local[replica_id].clock = remote_clock;
             InsertReplicaClock(db, replica_id, remote_clock);
+
+        } else if (local.at(replica_id).clock < remote_clock){
+            local[replica_id].clock = remote_clock;
+            UpdateReplicaClock(db, replica_id, remote_clock);
         }
     }
 }

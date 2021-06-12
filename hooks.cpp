@@ -204,6 +204,8 @@ void PreupdateHook(
 
 int CommitHook(void* ctx) {
     auto context = (ReplicaState*)ctx;
+    if (context->is_merging) return 0;
+
     cout << "Commit invoked" << endl;
     MUST_OK(SerializeToRon("ron_log.txt", context->transaction_ops), "transaction was not written");
     context->transaction_ops.clear();
@@ -213,6 +215,8 @@ int CommitHook(void* ctx) {
 
 void RollBackHook(void* ctx) {
     auto context = (ReplicaState*) ctx;
+    if (context->is_merging) return;
+
     cout << "Transaction rolled back" << endl;
     context->version_vector[context->replica_id].clock -= context->transaction_ops.size();
     context->version_vector[context->replica_id].ondx -= context->transaction_ops.size();
