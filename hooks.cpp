@@ -179,11 +179,6 @@ void PreupdateHook(
     auto tracked_tables = context->tracked_tables;
     string table_name(tbl_name);
 
-    if (table_name == "version_vector") {
-        UpdateInMemoryVersionVector(db, context);
-        return;
-    }
-
     if (context->is_merging)
         return;
 
@@ -191,9 +186,8 @@ void PreupdateHook(
     if (!TryGetTableDescription(tracked_tables, table_name, tbl))
         return;
 
-    auto op_uuid = Uuid::Lamport(
-            context->version_vector[context->replica_id].clock + 1,
-            context->replica_id);
+    auto op_uuid = Uuid::Lamport(context->next_op_timestamp, context->replica_id);
+
     if (operation == SQLITE_INSERT) {
         HandleInsert(db, tbl, context, op_uuid);
     } else if (operation == SQLITE_DELETE) {
@@ -201,6 +195,10 @@ void PreupdateHook(
     } else if (operation == SQLITE_UPDATE) {
         HandleUpdate(db, tbl, context, op_uuid);
     }
+
+    context->version_vector[context->replica_id].clock = context->next_op_timestamp;
+    context->version_vector[context->replica_id].ondx++;
+    context->next_op_timestamp++;
 }
 
 
@@ -217,18 +215,22 @@ void RollBackHook(void* ctx) {
     auto context = (ReplicaState*) ctx;
     cout << "Transaction rolled back" << endl;
     context->version_vector[context->replica_id].clock -= context->transaction_ops.size();
+    context->version_vector[context->replica_id].ondx -= context->transaction_ops.size();
     context->transaction_ops.clear();
 }
 
 
-void Begin(sqlite3* db) {
+void Begin(sqlite3* db, ReplicaState* context) {
+    context->transaction_ops.clear();
     auto sql = "begin transaction;";
     Run(db, sql);
 }
 
 
 void Commit(sqlite3* db, ReplicaState* context) {
-    MoveVector(db, context->replica_id, context->transaction_ops.size(), context->transaction_ops.size());
+    auto version = context->version_vector[context->replica_id];
+    UpdateReplicaOndx(db, context->replica_id, version.ondx);
+    UpdateReplicaClock(db, context->replica_id, version.clock);
     auto sql = "commit transaction;";
     Run(db, sql);
 }

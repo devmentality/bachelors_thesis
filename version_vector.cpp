@@ -64,7 +64,7 @@ void UpdateReplicaClock(sqlite3* db, uint64_t replica_id, int64_t clock) {
 
 void UpdateVersionVector(
         sqlite3* db,
-        const map<uint64_t, Version>& local,
+        map<uint64_t, Version>& local,
         const map<uint64_t, Version>& remote
 ) {
     for(auto item: remote) {
@@ -73,19 +73,41 @@ void UpdateVersionVector(
 
         if (local.find(replica_id) != local.end() &&
             local.at(replica_id).clock < remote_clock) {
+            local[replica_id].clock = remote_clock;
             UpdateReplicaClock(db, replica_id, remote_clock);
         } else {
+            local[replica_id].clock = remote_clock;
             InsertReplicaClock(db, replica_id, remote_clock);
         }
     }
 }
 
+// replica_id, ondx, clock
+//void MoveVector(sqlite3* db, uint64_t replica_id, int ondx_delta, int clock_delta) {
+//    auto sql = "update version_vector set " \
+//                "ondx = ondx + " + to_string(ondx_delta) + ", " \
+//                "clock = clock + " + to_string(clock_delta) + " " \
+//                "where replica_id = " + to_string(replica_id);
+//
+//    Run(db, sql);
+//}
 
-void MoveVector(sqlite3* db, uint64_t replica_id, int ondx_delta, int clock_delta) {
+
+void UpdateReplicaOndx(sqlite3* db, uint64_t replica_id, int64_t ondx) {
     auto sql = "update version_vector set " \
-                "ondx = ondx + " + to_string(ondx_delta) + ", " \
-                "clock = clock + " + to_string(clock_delta) + " " \
+                "ondx = " + to_string(ondx) +
                 "where replica_id = " + to_string(replica_id);
 
     Run(db, sql);
 }
+
+
+int64_t GetNextOpTimestamp(ReplicaState* replica_state) {
+    int64_t max_clock = -1;
+    for(auto item: replica_state->version_vector)
+        max_clock = std::max(max_clock, item.second.clock);
+
+    return max_clock + 1;
+}
+
+

@@ -7,6 +7,10 @@
 
 sqlite3_stmt* GenerateDeletePreparedStatement(const ron::Op& op, sqlite3* db, const TableDescription& table);
 sqlite3_stmt* GenerateInsertPreparedStatement(const ron::Op& op, sqlite3* db, const TableDescription& table);
-
+sqlite3_stmt* GenerateUpdatePreparedStatement(
+        const ron::Op& new_op,
+        const ron::Op& old_op,
+        sqlite3* db,
+        const TableDescription& table);
 
 #endif //MAINPROJ_SQLITE_STATEMENTS_H

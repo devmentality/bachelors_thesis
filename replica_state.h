@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <algorithm>
 
 struct Version {
     int64_t ondx;
@@ -21,7 +22,7 @@ struct Version {
 
 struct ReplicaState {
     uint64_t replica_id;
-    int64_t logical_time;
+    int64_t next_op_timestamp;
     std::vector<TableDescription> tracked_tables;
     std::vector<ron::Op> transaction_ops;
     std::map<uint64_t, Version> version_vector;
