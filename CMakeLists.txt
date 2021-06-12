@@ -7,4 +7,4 @@ set(MAIN_PROJECT_SRC_LIST main.cpp schema.cpp hooks.cpp column_types.cpp log.cpp
 add_executable(main ${MAIN_PROJECT_SRC_LIST})
 add_subdirectory(ron)
 add_subdirectory(sqlite)
-target_link_libraries(main ron_static sqlite)
+target_link_libraries(main ron_static sqlite networking)
