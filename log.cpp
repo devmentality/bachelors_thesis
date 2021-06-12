@@ -51,8 +51,8 @@ PROC SerializeToRon(const string& log_file_name, const vector<Op>& operations) {
     CALL(file.Open(log_file_name, Stream::APPEND));
     for(auto op: operations) {
         CALL(file.FeedOp(op));
-        CALL(file.FeedString(",\n"));
     }
+    CALL(file.FeedString(",\n"));
     CALL(file.DrainAll());
     CALL(file.Close());
     DONE;

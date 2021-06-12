@@ -55,7 +55,7 @@ void InsertReplicaClock(sqlite3* db, uint64_t replica_id, int64_t clock) {
 
 void UpdateReplicaClock(sqlite3* db, uint64_t replica_id, int64_t clock) {
     auto sql = "update version_vector set " \
-                "clock = " + to_string(clock) +
+                "clock = " + to_string(clock) + " "
                 "where replica_id = " + to_string(replica_id);
 
     Run(db, sql);
@@ -95,7 +95,7 @@ void UpdateVersionVector(
 
 void UpdateReplicaOndx(sqlite3* db, uint64_t replica_id, int64_t ondx) {
     auto sql = "update version_vector set " \
-                "ondx = " + to_string(ondx) +
+                "ondx = " + to_string(ondx) + " "
                 "where replica_id = " + to_string(replica_id);
 
     Run(db, sql);

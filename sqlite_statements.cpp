@@ -1,3 +1,4 @@
+#include <iostream>
 #include "sqlite_statements.h"
 
 #include "ron/ron-streams.hpp"
@@ -29,7 +30,7 @@ void BindNextParameter(
         sqlite3_stmt* statement,
         const string& param_name
 ) {
-    auto parameter_index = sqlite3_bind_parameter_index(statement, param_name.c_str());
+    auto parameter_index = sqlite3_bind_parameter_index(statement, ("@" + param_name).c_str());
     switch (column.type) {
         case ColumnType::Integer: {
             int64_t int_value;
@@ -198,7 +199,10 @@ sqlite3_stmt* GenerateUpdatePreparedStatement(
 
     auto sql = GenerateUpdateSqlStatement(table);
     const char* pz_tail = nullptr;
-    sqlite3_prepare_v2(db, sql.c_str(), sql.length(), &statement, &pz_tail);
+    auto status = sqlite3_prepare_v2(db, sql.c_str(), sql.length(), &statement, &pz_tail);
+    if (status != SQLITE_OK) {
+        cout << status << endl;
+    }
     BindParametersForUpdateStatement(new_op, old_op, table, statement);
 
     return statement;

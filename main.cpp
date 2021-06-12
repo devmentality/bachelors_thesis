@@ -191,8 +191,6 @@ void TestFullMerge() {
     vector<DbOperation> db_ops;
     GenerateResultingOperations(db_ops, log_ops, new_ops);
 
-    SerializeToRon("ron_log.txt", new_ops);
-
     replica_state->is_merging = true;
 
     Begin(db, replica_state);
@@ -207,7 +205,10 @@ void TestFullMerge() {
         }
 
         if (stmt != nullptr) {
-            sqlite3_step(stmt);
+            auto status = sqlite3_step(stmt);
+            if (status != SQLITE_DONE) {
+                cout << status << endl;
+            }
             sqlite3_finalize(stmt);
         }
     }
@@ -217,6 +218,7 @@ void TestFullMerge() {
     UpdateReplicaOndx(db, replica_state->replica_id,
                       replica_state->version_vector[replica_state->replica_id].ondx + new_ops.size());
     replica_state->next_op_timestamp = GetNextOpTimestamp(replica_state);
+    SerializeToRon("ron_log.txt", new_ops);
     Commit(db, replica_state);
 
     replica_state->is_merging = false;
