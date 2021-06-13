@@ -1,10 +1,7 @@
-cmake_minimum_required(VERSION 3.9.4)
-project(Networking)
+cmake_minimum_required(VERSION 3.19)
+project(networking)
 
+set(CMAKE_CXX_STANDARD 14)
 
-set(NETWORKING_SOURCES TCPClient.cpp TCPServer.cpp)
-set(NETWORKING_HEADERS TCPClient.h TCPServer.h)
-add_library(networking ${NETWORKING_SOURCES} ${NETWORKING_HEADERS})
-
-target_include_directories(networking PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(networking)
+add_executable(client client_main.cpp tcp_client.cpp)
+add_executable(server server_main.cpp tcp_server.cpp)

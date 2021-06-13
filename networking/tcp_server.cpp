@@ -2,27 +2,18 @@
 
 #include <iostream>
 #include <string>
-#include <cstdio>
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
 #include <cstdlib>
 #include <unistd.h>
 #include <cstring>
-#include <netdb.h>
-#include <sys/uio.h>
-#include <ctime>
-#include <sys/wait.h>
-#include <fcntl.h>
-#include <fstream>
-#include <string>
+
 
 using namespace std;
 
 
 string read_command(int client_socket) {
-    char cmd[4] = {0};
+    char cmd[5] = {0};
     recv(client_socket, (char*)&cmd, sizeof(cmd), 0);
     return string(cmd);
 }
