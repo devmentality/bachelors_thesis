@@ -12,7 +12,11 @@
 using namespace std;
 
 
-void run_push(const string& server_ip, int server_port) {
+void run_push(
+        const string& server_ip,
+        int server_port,
+        const map<uint64_t,
+) {
     struct hostent* host = gethostbyname(server_ip.c_str());
 
     sockaddr_in server_address;
