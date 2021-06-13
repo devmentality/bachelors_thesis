@@ -202,12 +202,18 @@ void PreupdateHook(
 }
 
 
+string GetLogName(uint64_t replica_id) {
+    return "log_" + to_string(replica_id) + ".txt";
+}
+
+
 int CommitHook(void* ctx) {
     auto context = (ReplicaState*)ctx;
     if (context->is_merging) return 0;
 
     cout << "Commit invoked" << endl;
-    MUST_OK(SerializeToRon("ron_log.txt", context->transaction_ops), "transaction was not written");
+    MUST_OK(SerializeToRon(GetLogName(context->replica_id), context->transaction_ops),
+            "transaction was not written");
     context->transaction_ops.clear();
     return 0;
 }

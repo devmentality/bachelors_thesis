@@ -1,9 +1,9 @@
 #include <iostream>
 #include <map>
 #include <vector>
-#include "tcp_client.h"
 #include "version_vector.h"
 #include "log.h"
+#include "hooks.h"
 #include "sqlite3.h"
 
 using namespace std;
@@ -35,8 +35,33 @@ void Show(ReplicaState* replica_state) {
 }
 
 
-void RunApp() {
+void Add(ReplicaState* replica_state, const string& name, const string& phone) {
+    sqlite3* db;
+    sqlite3_open(GetDbName(replica_state->replica_id).c_str(), &db);
+    SetupHooks(db, replica_state);
+    Begin(db, replica_state);
+
+    string sql =
+            "insert into phones(name, phone)"\
+            "values(@name, @phone)";
+
+    sqlite3_stmt *stmt = nullptr;
+    sqlite3_prepare_v2(db, sql.c_str(), sql.length(), &stmt, nullptr);
+    sqlite3_bind_text(stmt, sqlite3_bind_parameter_index(stmt, "@name"), name.c_str(), name.length(), SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, sqlite3_bind_parameter_index(stmt, "@phone"), phone.c_str(), phone.length(), SQLITE_TRANSIENT);
+
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    Commit(db, replica_state);
+    sqlite3_close(db);
+}
+
+
+void RunApp(ReplicaState* replica_state) {
     cout << "Sample App. Phone Book" << endl;
+    Show(replica_state);
+    cout << endl << endl;
 
     while (true) {
         cout << "> ";
@@ -46,7 +71,9 @@ void RunApp() {
         if (cmd == "exit") {
             break;
         } else if (cmd == "add") {
-
+            string name, phone;
+            cin >> name >> phone;
+            Add(replica_state, name, phone);
         } else if (cmd == "push") {
 
         } else if (cmd == "pull") {
@@ -54,13 +81,36 @@ void RunApp() {
         } else {
             cout << "Command is not recognized" << endl;
         }
+
+        Show(replica_state);
+        cout << endl << endl;
     }
+}
+
+
+void OnFirstLaunch(uint64_t replica_id) {
+    sqlite3* db;
+    sqlite3_open(GetDbName(replica_id).c_str(), &db);
+
+    auto sql =
+            "create table phones ( "\
+            "  name text not null primary key, "\
+            "  phone text not null)";
+
+    Run(db, sql);
+    SetupVersionVector(replica_id, db);
+
+    sqlite3_close(db);
 }
 
 
 int main(int argc, char *argv[])
 {
     uint64_t replica_id = strtoull(argv[1], nullptr, 10);
+
+    if (argc > 2 && (strcmp(argv[2], "--first") == 0))
+        OnFirstLaunch(replica_id);
+
     vector<TableDescription> tracked_tables {
             TableDescription(
                     "phones",
@@ -79,6 +129,9 @@ int main(int argc, char *argv[])
     ReadVersionVector(replica_state->version_vector, db);
     replica_state->next_op_timestamp = GetNextOpTimestamp(replica_state);
 
+    sqlite3_close(db);
+
+    RunApp(replica_state);
 
     return 0;
 }
