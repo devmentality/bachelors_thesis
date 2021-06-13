@@ -11,6 +11,7 @@
 int Connect(const std::string& server_ip, int server_port);
 void SendCmd(int socket, const std::string& cmd);
 int64_t FetchOndx(int socket, uint64_t replica_id);
+void SendOndx(int socket, int64_t ondx);
 void PushChanges(
         int socket,
         const std::map<uint64_t, Version>& version_vector,

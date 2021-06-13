@@ -55,6 +55,11 @@ int64_t FetchOndx(int socket, uint64_t replica_id) {
 }
 
 
+void SendOndx(int socket, int64_t ondx) {
+    send(socket, &ondx, sizeof ondx, 0);
+}
+
+
 void PushChanges(
         int socket,
         const map<uint64_t, Version>& version_vector,
@@ -62,8 +67,4 @@ void PushChanges(
 ) {
     SendVersionVector(socket, version_vector);
     SendPatch(socket, patch);
-
-    close(socket);
-
-    cout << "Connection closed" << endl;
 }

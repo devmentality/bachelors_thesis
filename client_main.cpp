@@ -1,11 +1,15 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <unistd.h>
+#include <fstream>
 #include "version_vector.h"
 #include "log.h"
 #include "hooks.h"
 #include "sqlite3.h"
 #include "tcp_client.h"
+#include "socket_io.h"
+#include "merge.h"
 
 using namespace std;
 using namespace ron;
@@ -13,6 +17,7 @@ using namespace ron;
 
 const string SERVER_IP = "127.0.0.1";
 const int SERVER_PORT = 12345;
+const uint64_t SERVER_REPLICA_ID = 0;
 
 
 string GetDbName(uint64_t replica_id) {
@@ -79,6 +84,37 @@ void Push(ReplicaState* replica_state) {
     }
 
     PushChanges(socket, replica_state->version_vector, patch);
+    close(socket);
+    cout << "Connection closed" << endl;
+}
+
+
+void Pull(ReplicaState* replica_state) {
+    int socket = Connect(SERVER_IP, SERVER_PORT);
+    if (socket == -1) {
+        cout << "Server is not available" << endl;
+        return;
+    }
+
+    SendCmd(socket, "pull");
+    auto server_ondx = replica_state->version_vector[SERVER_REPLICA_ID].ondx;
+    SendOndx(socket, server_ondx);
+
+    map<uint64_t, Version> remote_version_vector;
+    vector<Op> patch;
+
+    ReadVersionVector(remote_version_vector, socket);
+    ReadRonPatch(patch, socket);
+
+    vector<Op> replica_log;
+    MUST_OK(ReadLog(replica_log, GetLogName(replica_state->replica_id)), "read failed");
+
+    sqlite3* db;
+    sqlite3_open(GetDbName(replica_state->replica_id).c_str(), &db);
+
+    MergeReplicas(replica_state->tracked_tables[0], db, replica_state, replica_log, SERVER_REPLICA_ID, patch, remote_version_vector);
+
+    sqlite3_close(db);
 }
 
 
@@ -101,7 +137,7 @@ void RunApp(ReplicaState* replica_state) {
         } else if (cmd == "push") {
             Push(replica_state);
         } else if (cmd == "pull") {
-
+            Pull(replica_state);
         } else {
             cout << "Command is not recognized" << endl;
         }
@@ -123,6 +159,9 @@ void OnFirstLaunch(uint64_t replica_id) {
 
     Run(db, sql);
     SetupVersionVector(replica_id, db);
+
+    ofstream log_file;
+    log_file.open (GetLogName(replica_id), ios::out);
 
     sqlite3_close(db);
 }

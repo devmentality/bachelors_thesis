@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <cstring>
-#include "version_vector.h"
 #include "ron/op.hpp"
 #include "ron/ron-streams.hpp"
 #include "socket_io.h"
@@ -50,8 +49,20 @@ void HandlePush(int client_socket, ReplicaState* replica_state) {
 }
 
 
-void HandlePull(int client_socket) {
+void HandlePull(int client_socket, ReplicaState* replica_state) {
+    int64_t ondx;
+    recv(client_socket, &ondx, sizeof ondx, 0);
 
+    vector<Op> server_log;
+    MUST_OK(ReadLog(server_log, "server_log.txt"), "read failed");
+
+    vector<Op> patch;
+    for(auto i = ondx; i < server_log.size(); i++) {
+        patch.push_back(server_log[i]);
+    }
+
+    SendVersionVector(client_socket, replica_state->version_vector);
+    SendPatch(client_socket, patch);
 }
 
 
@@ -64,7 +75,7 @@ void ServeClient(int client_socket, ReplicaState* replica_state) {
     if(cmd == "push") {
         HandlePush(client_socket, replica_state);
     } else if (cmd == "pull") {
-        HandlePull(client_socket);
+        HandlePull(client_socket, replica_state);
     }
 
     close(client_socket);
