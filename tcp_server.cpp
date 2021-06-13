@@ -68,10 +68,11 @@ void ReadRonPatch(vector<Op>& patch, int client_socket) {
 
 
 void HandlePush(int client_socket) {
-    uint64_t buffer;
+    map<uint64_t, Version> remote_version_vector;
+    vector<Op> patch;
 
-    recv(client_socket, &buffer, sizeof(buffer), 0);
-    cout << "Got number: " << buffer << endl;
+    ReadVersionVector(remote_version_vector, client_socket);
+    ReadRonPatch(patch, client_socket);
 }
 
 
@@ -91,8 +92,6 @@ void ServeClient(int client_socket) {
     } else if (cmd == "pull") {
         HandlePull(client_socket);
     }
-
-    //bytes_written += send(client_socket, (char*)&msg, strlen(msg), 0);
 
     close(client_socket);
     cout << "Connection closed" << endl;
@@ -119,10 +118,9 @@ void Run(int port) {
         return;
     }
     cout << "Waiting for a client to connect" << endl;
+    listen(server_socket, 5);
 
     while (true) {
-        listen(server_socket, 5);
-
         sockaddr_in client_address;
         socklen_t client_address_size = sizeof(client_address);
 

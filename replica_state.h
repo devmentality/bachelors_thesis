@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include "schema.h"
 
 struct Version {
     int64_t ondx;

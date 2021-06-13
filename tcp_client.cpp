@@ -34,7 +34,7 @@ void SendVersionVector(
 }
 
 
-void SendPush(
+void SendPatch(
         int client_socket,
         const vector<Op>& patch
 ) {
@@ -47,7 +47,7 @@ void SendPush(
     auto serialized_patch = as_string(patch_stream.Filled());
     auto serialized_patch_size = serialized_patch.length();
 
-    send(client_socket, &serialized_patch, sizeof serialized_patch_size, 0);
+    send(client_socket, &serialized_patch_size, sizeof serialized_patch_size, 0);
     send(client_socket, serialized_patch.c_str(), serialized_patch_size, 0);
 }
 
@@ -80,7 +80,7 @@ void RunPush(
     const char cmd[] = "push";
     send(client_socket, &cmd, sizeof cmd, 0);
     SendVersionVector(client_socket, version_vector);
-    SendPush(client_socket, patch);
+    SendPatch(client_socket, patch);
 
     close(client_socket);
 
