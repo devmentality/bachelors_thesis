@@ -3,6 +3,6 @@
 
 int main(int argc, char *argv[])
 {
-    run(12345);
+    Run(12345);
     return 0;
 }
