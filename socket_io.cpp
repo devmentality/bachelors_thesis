@@ -17,7 +17,7 @@ void ReadVersionVector(map<uint64_t, Version>& remote_version_vector, int client
     int items_count;
 
     recv(client_socket, &items_count, sizeof items_count, 0);
-    cout << "VV rows count: " << items_count << endl;
+    //cout << "VV rows count: " << items_count << endl;
 
     for(auto i = 0; i < items_count; i++) {
         uint64_t replica_id;
@@ -26,7 +26,7 @@ void ReadVersionVector(map<uint64_t, Version>& remote_version_vector, int client
         recv(client_socket, &replica_id, sizeof replica_id, 0);
         recv(client_socket, &clock, sizeof clock, 0);
 
-        cout << replica_id << " -> " << clock << endl;
+        //cout << replica_id << " -> " << clock << endl;
 
         remote_version_vector[replica_id].ondx = 0;
         remote_version_vector[replica_id].clock = clock;
@@ -46,7 +46,7 @@ void ReadRonPatch(vector<Op>& patch, int client_socket) {
     }
 
     string patch_string = buffer;
-    cout << "PATCH: " << patch_string << endl;
+    //cout << "PATCH: " << patch_string << endl;
 
     RONtStream reader{Stream::CLOSED, Stream::TMP};
     reader.FeedString(patch_string);

@@ -9,7 +9,6 @@
 #include "lww.h"
 #include "ron/op.hpp"
 #include "sqlite3.h"
-#include "hooks.h"
 #include "replica_state.h"
 #include "sqlite_statements.h"
 
@@ -29,9 +28,9 @@ void MergeReplicas(
     // new ron ops to add to local oplog
     vector<Op> new_ops;
     MergeLogs(new_ops, log_ops, patch);
-    for(auto op: new_ops) {
-        cout << op.ID().String() << endl;
-    }
+//    for(auto op: new_ops) {
+//        cout << op.ID().String() << endl;
+//    }
 
     vector<DbOperation> db_ops;
     GenerateResultingOperations(db_ops, log_ops, new_ops);
@@ -66,6 +65,6 @@ void MergeReplicas(
     replica_state->next_op_timestamp = GetNextOpTimestamp(replica_state);
     SerializeToRon(replica_state->log_file_name, new_ops);
     Run(db, "commit transaction;");
-
+    
     replica_state->is_merging = false;
 }

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <fstream>
 #include "tcp_server.h"
 #include "version_vector.h"
 
@@ -21,6 +22,9 @@ void OnFirstLaunch() {
 
     Run(db, sql);
     SetupVersionVector(0, db);
+
+    ofstream log_file;
+    log_file.open ("server_log.txt", ios::out);
 
     sqlite3_close(db);
 }

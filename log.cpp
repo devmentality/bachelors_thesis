@@ -47,6 +47,8 @@ void MergeLogs(vector<Op>& applied_ops_out, const vector<Op> &log, const vector<
 
 
 PROC SerializeToRon(const string& log_file_name, const vector<Op>& operations) {
+    if (operations.empty()) DONE;
+
     RONtStream file{};
     CALL(file.Open(log_file_name, Stream::APPEND));
     for(auto op: operations) {
