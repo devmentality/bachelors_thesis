@@ -11,7 +11,7 @@ struct Version {
     int64_t clock;
 
     Version() {
-        ondx = -1; clock = -1;
+        ondx = 0; clock = 0;
     }
 
     Version(int64_t ondx, int64_t clock) {
@@ -27,6 +27,7 @@ struct ReplicaState {
     std::vector<TableDescription> tracked_tables;
     std::vector<ron::Op> transaction_ops;
     std::map<uint64_t, Version> version_vector;
+    std::string log_file_name;
     bool is_merging;
 };
 

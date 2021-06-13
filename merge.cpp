@@ -38,7 +38,7 @@ void MergeReplicas(
 
     replica_state->is_merging = true;
 
-    Begin(db, replica_state);
+    Run(db, "begin transaction;");
     for(auto db_op: db_ops) {
         sqlite3_stmt* stmt = nullptr;
         if (db_op.sql_operation == "insert") {
@@ -64,8 +64,8 @@ void MergeReplicas(
     UpdateReplicaOndx(db, replica_state->replica_id,
                       replica_state->version_vector[replica_state->replica_id].ondx + new_ops.size());
     replica_state->next_op_timestamp = GetNextOpTimestamp(replica_state);
-    SerializeToRon("ron_log.txt", new_ops);
-    Commit(db, replica_state);
+    SerializeToRon(replica_state->log_file_name, new_ops);
+    Run(db, "commit transaction;");
 
     replica_state->is_merging = false;
 }

@@ -5,6 +5,7 @@
 #include "log.h"
 #include "hooks.h"
 #include "sqlite3.h"
+#include "tcp_client.h"
 
 using namespace std;
 using namespace ron;
@@ -16,6 +17,10 @@ const int SERVER_PORT = 12345;
 
 string GetDbName(uint64_t replica_id) {
     return "db_" + to_string(replica_id);
+}
+
+string GetLogName(uint64_t replica_id) {
+    return "log_" + to_string(replica_id) + ".txt";
 }
 
 
@@ -58,6 +63,25 @@ void Add(ReplicaState* replica_state, const string& name, const string& phone) {
 }
 
 
+void Push(ReplicaState* replica_state) {
+    int socket = Connect(SERVER_IP, SERVER_PORT);
+    if (socket == -1) {
+        cout << "Server is not available" << endl;
+        return;
+    }
+    SendCmd(socket, "push");
+    auto ondx = FetchOndx(socket, replica_state->replica_id);
+    vector<Op> log_ops;
+    MUST_OK(ReadLog(log_ops, GetLogName(replica_state->replica_id)), "read failed");
+    vector<Op> patch;
+    for(int64_t i = ondx; i < log_ops.size(); i++) {
+        patch.push_back(log_ops[i]);
+    }
+
+    PushChanges(socket, replica_state->version_vector, patch);
+}
+
+
 void RunApp(ReplicaState* replica_state) {
     cout << "Sample App. Phone Book" << endl;
     Show(replica_state);
@@ -75,7 +99,7 @@ void RunApp(ReplicaState* replica_state) {
             cin >> name >> phone;
             Add(replica_state, name, phone);
         } else if (cmd == "push") {
-
+            Push(replica_state);
         } else if (cmd == "pull") {
 
         } else {
@@ -123,6 +147,7 @@ int main(int argc, char *argv[])
     replica_state->replica_id = replica_id;
     replica_state->tracked_tables = tracked_tables;
     replica_state->is_merging = false;
+    replica_state->log_file_name = GetLogName(replica_id);
 
     sqlite3* db;
     sqlite3_open(GetDbName(replica_id).c_str(), &db);

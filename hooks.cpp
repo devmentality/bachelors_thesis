@@ -147,7 +147,7 @@ Op MakeDeleteOpFromValues(
 void HandleInsert(sqlite3 *db, const TableDescription& table, ReplicaState* context, Uuid op_uuid) {
     auto values = ReadNewValues(db);
     auto areValidTypes = AreValidTypes(table, values);
-    cout << "Types are " << (areValidTypes ? "" : "not") << " valid" << endl;
+    //cout << "Types are " << (areValidTypes ? "" : "not") << " valid" << endl;
     context->transaction_ops.push_back(MakeUpsertOpFromValues(table, values, op_uuid));
 }
 
@@ -161,7 +161,7 @@ void HandleDelete(sqlite3* db, const TableDescription& table, ReplicaState* cont
 void HandleUpdate(sqlite3 *db, const TableDescription& table, ReplicaState* context, Uuid op_uuid) {
     auto values = ReadNewValues(db);
     auto areValidTypes = AreValidTypes(table, values);
-    cout << "Types are " << (areValidTypes ? "" : "not") << " valid" << endl;
+    //cout << "Types are " << (areValidTypes ? "" : "not") << " valid" << endl;
     context->transaction_ops.push_back(MakeUpsertOpFromValues(table, values, op_uuid));
 }
 
@@ -202,17 +202,12 @@ void PreupdateHook(
 }
 
 
-string GetLogName(uint64_t replica_id) {
-    return "log_" + to_string(replica_id) + ".txt";
-}
-
-
 int CommitHook(void* ctx) {
     auto context = (ReplicaState*)ctx;
     if (context->is_merging) return 0;
 
-    cout << "Commit invoked" << endl;
-    MUST_OK(SerializeToRon(GetLogName(context->replica_id), context->transaction_ops),
+    //cout << "Commit invoked" << endl;
+    MUST_OK(SerializeToRon(context->log_file_name, context->transaction_ops),
             "transaction was not written");
     context->transaction_ops.clear();
     return 0;
@@ -223,7 +218,7 @@ void RollBackHook(void* ctx) {
     auto context = (ReplicaState*) ctx;
     if (context->is_merging) return;
 
-    cout << "Transaction rolled back" << endl;
+    //cout << "Transaction rolled back" << endl;
     context->version_vector[context->replica_id].clock -= context->transaction_ops.size();
     context->version_vector[context->replica_id].ondx -= context->transaction_ops.size();
     context->transaction_ops.clear();

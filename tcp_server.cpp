@@ -38,13 +38,14 @@ void HandlePush(int client_socket, ReplicaState* replica_state) {
     ReadVersionVector(remote_version_vector, client_socket);
     ReadRonPatch(patch, client_socket);
 
-    sqlite3* db;
-    sqlite3_open("server.db", &db);
-
     vector<Op> server_log;
     MUST_OK(ReadLog(server_log, "server_log.txt"), "read failed");
 
+    sqlite3* db;
+    sqlite3_open("db_server", &db);
+
     MergeReplicas(replica_state->tracked_tables[0], db, replica_state, server_log, remote_replica_id, patch, remote_version_vector);
+
     sqlite3_close(db);
 }
 

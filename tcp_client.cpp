@@ -19,12 +19,7 @@ using namespace std;
 using namespace ron;
 
 
-void RunPush(
-        const string& server_ip,
-        int server_port,
-        const map<uint64_t, Version>& version_vector,
-        const vector<Op>& patch
-) {
+int Connect(const string& server_ip, int server_port) {
     struct hostent* host = gethostbyname(server_ip.c_str());
 
     sockaddr_in server_address;
@@ -40,16 +35,35 @@ void RunPush(
     if(status < 0)
     {
         cout<< "Error connecting to socket"<< endl;
-        return;
+        return -1;
     }
-    cout << "Connected to the server" << endl;
 
-    const char cmd[] = "push";
-    send(client_socket, &cmd, sizeof cmd, 0);
-    SendVersionVector(client_socket, version_vector);
-    SendPatch(client_socket, patch);
+    return client_socket;
+}
 
-    close(client_socket);
+
+void SendCmd(int socket, const string& cmd) {
+    send(socket, cmd.c_str(), cmd.length() + 1, 0);
+}
+
+
+int64_t FetchOndx(int socket, uint64_t replica_id) {
+    send(socket, &replica_id, sizeof replica_id, 0);
+    int64_t ondx;
+    recv(socket, &ondx, sizeof ondx, 0);
+    return ondx;
+}
+
+
+void PushChanges(
+        int socket,
+        const map<uint64_t, Version>& version_vector,
+        const vector<Op>& patch
+) {
+    SendVersionVector(socket, version_vector);
+    SendPatch(socket, patch);
+
+    close(socket);
 
     cout << "Connection closed" << endl;
 }
