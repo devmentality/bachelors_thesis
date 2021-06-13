@@ -64,7 +64,7 @@ void UpdateReplicaClock(sqlite3* db, uint64_t replica_id, int64_t clock) {
 
 void UpdateVersionVector(
         sqlite3* db,
-        map<uint64_t, Version>& local,
+        map<uint64_t, Version> local,
         const map<uint64_t, Version>& remote
 ) {
     for(auto item: remote) {

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.9.4)
 PROJECT(MainProj)
 
 add_definitions(-DSQLITE_ENABLE_PREUPDATE_HOOK)
-set(MAIN_PROJECT_SRC_LIST main.cpp schema.cpp hooks.cpp column_types.cpp log.cpp log.h lww.cpp sqlite_statements.cpp sqlite_statements.h lww.h version_vector.cpp version_vector.h replica_state.h)
+set(MAIN_PROJECT_SRC_LIST main.cpp schema.cpp hooks.cpp column_types.cpp log.cpp log.h lww.cpp sqlite_statements.cpp sqlite_statements.h lww.h version_vector.cpp version_vector.h replica_state.h merge.cpp merge.h networking/tcp_server.cpp networking/tcp_server.h networking/tcp_client.cpp networking/tcp_client.h)
 
 add_executable(main ${MAIN_PROJECT_SRC_LIST})
 add_subdirectory(ron)
