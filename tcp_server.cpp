@@ -10,6 +10,10 @@
 #include "version_vector.h"
 #include "ron/op.hpp"
 #include "ron/ron-streams.hpp"
+#include "socket_io.h"
+#include "merge.h"
+#include "sqlite3.h"
+#include "log.h"
 
 using namespace std;
 using namespace ron;
@@ -17,62 +21,31 @@ using namespace ron;
 
 string ReadCommand(int client_socket) {
     char cmd[5] = {0};
-    recv(client_socket, (char*)&cmd, sizeof(cmd), 0);
+    recv(client_socket, &cmd, sizeof cmd, 0);
     return string(cmd);
 }
 
 
-void ReadVersionVector(map<uint64_t, Version>& remote_version_vector, int client_socket) {
-    int items_count;
+void HandlePush(int client_socket, ReplicaState* replica_state) {
+    uint64_t remote_replica_id;
+    recv(client_socket, &remote_replica_id, sizeof remote_replica_id, 0);
+    auto ondx = replica_state->version_vector[remote_replica_id].ondx;
+    send(client_socket, &ondx, sizeof ondx, 0);
 
-    recv(client_socket, &items_count, sizeof items_count, 0);
-    cout << "VV rows count: " << items_count << endl;
-
-    for(auto i = 0; i < items_count; i++) {
-        uint64_t replica_id;
-        int64_t clock;
-
-        recv(client_socket, &replica_id, sizeof replica_id, 0);
-        recv(client_socket, &clock, sizeof clock, 0);
-
-        cout << replica_id << " -> " << clock << endl;
-
-        remote_version_vector[replica_id].ondx = 0;
-        remote_version_vector[replica_id].clock = clock;
-    }
-}
-
-
-void ReadRonPatch(vector<Op>& patch, int client_socket) {
-    uint64_t patch_size;
-    recv(client_socket, &patch_size, sizeof patch_size, 0);
-    uint64_t read_bytes = 0;
-    char *buffer = new char[patch_size];
-
-    while (read_bytes < patch_size) {
-        auto received_bytes = recv(client_socket, buffer + read_bytes, patch_size - read_bytes, 0);
-        read_bytes += received_bytes;
-    }
-
-    string patch_string = buffer;
-    cout << "PATCH: " << patch_string << endl;
-
-    RONtStream reader{Stream::CLOSED, Stream::TMP};
-    reader.FeedString(patch_string);
-
-    Op op;
-    while (reader.DrainOp(op).Ok()) {
-        patch.push_back(op);
-    }
-}
-
-
-void HandlePush(int client_socket) {
     map<uint64_t, Version> remote_version_vector;
     vector<Op> patch;
 
     ReadVersionVector(remote_version_vector, client_socket);
     ReadRonPatch(patch, client_socket);
+
+    sqlite3* db;
+    sqlite3_open("server.db", &db);
+
+    vector<Op> server_log;
+    MUST_OK(ReadLog(server_log, "server_log.txt"), "read failed");
+
+    MergeReplicas(replica_state->tracked_tables[0], db, replica_state, server_log, remote_replica_id, patch, remote_version_vector);
+    sqlite3_close(db);
 }
 
 
@@ -81,14 +54,14 @@ void HandlePull(int client_socket) {
 }
 
 
-void ServeClient(int client_socket) {
+void ServeClient(int client_socket, ReplicaState* replica_state) {
     cout << "Awaiting client response" << endl;
 
     auto cmd = ReadCommand(client_socket);
     cout << "Client's command: " + cmd << endl;
 
     if(cmd == "push") {
-        HandlePush(client_socket);
+        HandlePush(client_socket, replica_state);
     } else if (cmd == "pull") {
         HandlePull(client_socket);
     }
@@ -98,7 +71,7 @@ void ServeClient(int client_socket) {
 }
 
 
-void Run(int port) {
+void Run(int port, ReplicaState* replica_state) {
     //setup a socket and connection tools
     sockaddr_in server_address;
     bzero((char*)&server_address, sizeof(server_address));
@@ -131,7 +104,7 @@ void Run(int port) {
         }
         cout << "Connected with client" << endl;
 
-        ServeClient(client_socket);
+        ServeClient(client_socket, replica_state);
     }
 
     close(server_socket);

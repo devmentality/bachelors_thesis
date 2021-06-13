@@ -13,43 +13,10 @@
 #include "version_vector.h"
 #include "ron/op.hpp"
 #include "ron/ron-streams.hpp"
+#include "socket_io.h"
 
 using namespace std;
 using namespace ron;
-
-
-void SendVersionVector(
-        int client_socket,
-        const map<uint64_t, Version>& version_vector
-) {
-    int items_count = version_vector.size();
-    send(client_socket, &items_count, sizeof items_count, 0);
-
-    for(auto item: version_vector) {
-        auto replica_id = item.first;
-        auto clock = item.second.clock;
-        send(client_socket, &replica_id, sizeof replica_id, 0);
-        send(client_socket, &clock, sizeof clock, 0);
-    }
-}
-
-
-void SendPatch(
-        int client_socket,
-        const vector<Op>& patch
-) {
-    RONtStream patch_stream{Stream::CLOSED, Stream::TMP};
-    for(const auto &op: patch) {
-        patch_stream.FeedOp(op);
-    }
-    patch_stream.FeedEOF();
-
-    auto serialized_patch = as_string(patch_stream.Filled());
-    auto serialized_patch_size = serialized_patch.length();
-
-    send(client_socket, &serialized_patch_size, sizeof serialized_patch_size, 0);
-    send(client_socket, serialized_patch.c_str(), serialized_patch_size, 0);
-}
 
 
 void RunPush(

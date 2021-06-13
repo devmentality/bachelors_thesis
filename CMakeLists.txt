@@ -10,7 +10,8 @@ set(PROJECT_SOURCES_LIST
         lww.cpp
         sqlite_statements.cpp
         version_vector.cpp
-        merge.cpp)
+        merge.cpp
+        socket_io.cpp)
 
 add_subdirectory(ron)
 add_subdirectory(sqlite)
@@ -21,5 +22,5 @@ target_link_libraries(test ron_static sqlite)
 add_executable(server server_main.cpp tcp_server.cpp ${PROJECT_SOURCES_LIST})
 target_link_libraries(server ron_static sqlite)
 
-add_executable(client client_main.cpp tcp_client.cpp ${PROJECT_SOURCES_LIST})
+add_executable(client client_main.cpp tcp_client.cpp ${PROJECT_SOURCES_LIST} socket_io.cpp socket_io.h)
 target_link_libraries(client ron_static sqlite)
