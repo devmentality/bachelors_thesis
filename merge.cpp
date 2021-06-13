@@ -65,6 +65,6 @@ void MergeReplicas(
     replica_state->next_op_timestamp = GetNextOpTimestamp(replica_state);
     SerializeToRon(replica_state->log_file_name, new_ops);
     Run(db, "commit transaction;");
-    
+
     replica_state->is_merging = false;
 }
