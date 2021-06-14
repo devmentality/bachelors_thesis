@@ -68,6 +68,47 @@ void Add(ReplicaState* replica_state, const string& name, const string& phone) {
 }
 
 
+void Delete(ReplicaState* replica_state, const string& name) {
+    sqlite3* db;
+    sqlite3_open(GetDbName(replica_state->replica_id).c_str(), &db);
+    SetupHooks(db, replica_state);
+    Begin(db, replica_state);
+
+    string sql = "delete from phones where name = @name;";
+
+    sqlite3_stmt *stmt = nullptr;
+    sqlite3_prepare_v2(db, sql.c_str(), sql.length(), &stmt, nullptr);
+    sqlite3_bind_text(stmt, sqlite3_bind_parameter_index(stmt, "@name"), name.c_str(), name.length(), SQLITE_TRANSIENT);
+
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    Commit(db, replica_state);
+    sqlite3_close(db);
+}
+
+
+void Update(ReplicaState* replica_state, const string& name, const string& phone) {
+    sqlite3* db;
+    sqlite3_open(GetDbName(replica_state->replica_id).c_str(), &db);
+    SetupHooks(db, replica_state);
+    Begin(db, replica_state);
+
+    string sql = "update phones set phone = @phone where name = @name";
+
+    sqlite3_stmt *stmt = nullptr;
+    sqlite3_prepare_v2(db, sql.c_str(), sql.length(), &stmt, nullptr);
+    sqlite3_bind_text(stmt, sqlite3_bind_parameter_index(stmt, "@name"), name.c_str(), name.length(), SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, sqlite3_bind_parameter_index(stmt, "@phone"), phone.c_str(), phone.length(), SQLITE_TRANSIENT);
+
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    Commit(db, replica_state);
+    sqlite3_close(db);
+}
+
+
 void Push(ReplicaState* replica_state) {
     int socket = Connect(SERVER_IP, SERVER_PORT);
     if (socket == -1) {
@@ -134,6 +175,14 @@ void RunApp(ReplicaState* replica_state) {
             string name, phone;
             cin >> name >> phone;
             Add(replica_state, name, phone);
+        } else if (cmd == "delete") {
+            string name;
+            cin >> name;
+            Delete(replica_state, name);
+        } else if (cmd == "update") {
+            string name, phone;
+            cin >> name >> phone;
+            Update(replica_state, name, phone);
         } else if (cmd == "push") {
             Push(replica_state);
         } else if (cmd == "pull") {
